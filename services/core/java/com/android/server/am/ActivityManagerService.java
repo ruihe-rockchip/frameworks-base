@@ -5289,7 +5289,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mWindowManager.deferSurfaceLayout();
         try {
-            if (!restarting && hasVisibleActivities
+            if (!restarting && hasVisibleActivities && !mShuttingDown
                     && !mStackSupervisor.resumeFocusedStackTopActivityLocked()) {
                 // If there was nothing to resume, and we are not already restarting this process, but
                 // there is a visible activity that is hosted by the process...  then make sure all
