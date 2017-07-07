@@ -42,6 +42,15 @@ LOCAL_SRC_FILES += \
     $(LOCAL_REL_DIR)/com_android_server_GraphicsStatsService.cpp \
     $(LOCAL_REL_DIR)/onload.cpp
 
+LOCAL_SRC_FILES += \
+	$(LOCAL_REL_DIR)/rkdisplay/drmresources.cpp \
+	$(LOCAL_REL_DIR)/rkdisplay/drmconnector.cpp \
+	$(LOCAL_REL_DIR)/rkdisplay/drmcrtc.cpp \
+	$(LOCAL_REL_DIR)/rkdisplay/drmencoder.cpp \
+	$(LOCAL_REL_DIR)/rkdisplay/drmproperty.cpp \
+	$(LOCAL_REL_DIR)/rkdisplay/drmmode.cpp \
+        $(LOCAL_REL_DIR)/com_android_server_rkdisplay_RkDisplayModes.cpp \
+
 LOCAL_C_INCLUDES += \
     $(JNI_H_INCLUDE) \
     external/scrypt/lib/crypto \
@@ -52,6 +61,8 @@ LOCAL_C_INCLUDES += \
     system/core/libappfuse/include \
     system/gatekeeper/include \
     system/security/keystore/include \
+    external/libdrm \
+    external/libdrm/include/drm \
     $(call include-path-for, libhardware)/hardware \
     $(call include-path-for, libhardware_legacy)/hardware_legacy \
 
@@ -108,6 +119,8 @@ LOCAL_SHARED_LIBRARIES += \
     android.hardware.vr@1.0 \
     android.frameworks.schedulerservice@1.0 \
     android.frameworks.sensorservice@1.0 \
+    libdrm \
+    libsync
 
 LOCAL_STATIC_LIBRARIES += \
     android.hardware.broadcastradio@1.1-utils-lib \

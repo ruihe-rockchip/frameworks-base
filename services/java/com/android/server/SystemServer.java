@@ -114,6 +114,7 @@ import com.android.server.usage.UsageStatsService;
 import com.android.server.vr.VrManagerService;
 import com.android.server.webkit.WebViewUpdateService;
 import com.android.server.wm.WindowManagerService;
+import com.android.server.RkDisplayDeviceManagementService;
 
 import dalvik.system.VMRuntime;
 
@@ -1462,6 +1463,17 @@ public final class SystemServer {
                 traceBeginAndSlog("StartTvRemoteService");
                 mSystemServiceManager.startService(TvRemoteService.class);
                 traceEnd();
+            }
+
+            // $_rbox_$_modify_$
+            if("box".equals(SystemProperties.get("ro.target.product"))) {
+                try {
+                    ServiceManager.addService(
+                        "drm_device_management",
+                        new RkDisplayDeviceManagementService(context));
+                } catch (Throwable e) {
+                    Slog.e(TAG, "Failure starting kDisplayDeviceManagement Service", e);
+                }
             }
 
             if (!disableNonCoreServices) {
