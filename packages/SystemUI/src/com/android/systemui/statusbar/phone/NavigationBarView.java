@@ -92,6 +92,9 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
     private KeyButtonDrawable mImeIcon;
     private KeyButtonDrawable mMenuIcon;
     private KeyButtonDrawable mAccessibilityIcon;
+    private KeyButtonDrawable mVolumeAddIcon;
+    private KeyButtonDrawable mVolumeSubIcon;
+    private KeyButtonDrawable mScreenshotIcon;
 
     private GestureHelper mGestureHelper;
     private DeadZone mDeadZone;
@@ -221,6 +224,9 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
         mButtonDispatchers.put(R.id.ime_switcher, new ButtonDispatcher(R.id.ime_switcher));
         mButtonDispatchers.put(R.id.accessibility_button,
                 new ButtonDispatcher(R.id.accessibility_button));
+        mButtonDispatchers.put(R.id.screenshot, new ButtonDispatcher(R.id.screenshot));
+        mButtonDispatchers.put(R.id.volume_add, new ButtonDispatcher(R.id.volume_add));
+        mButtonDispatchers.put(R.id.volume_sub, new ButtonDispatcher(R.id.volume_sub));
     }
 
     public BarTransitions getBarTransitions() {
@@ -270,6 +276,18 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
 
     public View[] getAllViews() {
         return mRotatedViews;
+    }
+
+    public ButtonDispatcher getScreenshotButton() {
+        return mButtonDispatchers.get(R.id.screenshot);
+    }
+
+    public ButtonDispatcher getVolumeAddButton() {
+        return mButtonDispatchers.get(R.id.volume_add);
+    }
+
+    public ButtonDispatcher getVolumeSubButton() {
+        return mButtonDispatchers.get(R.id.volume_sub);
     }
 
     public ButtonDispatcher getRecentsButton() {
@@ -331,6 +349,9 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
             mMenuIcon = getDrawable(ctx, R.drawable.ic_sysbar_menu, R.drawable.ic_sysbar_menu_dark);
             mAccessibilityIcon = getDrawable(ctx, R.drawable.ic_sysbar_accessibility_button,
                     R.drawable.ic_sysbar_accessibility_button_dark);
+            mVolumeAddIcon = getDrawable(ctx, R.drawable.ic_sysbar_volume_add, R.drawable.ic_sysbar_volume_add_dark);
+            mVolumeSubIcon = getDrawable(ctx, R.drawable.ic_sysbar_volume_sub, R.drawable.ic_sysbar_volume_sub_dark);
+            mScreenshotIcon = getDrawable(ctx, R.drawable.ic_sysbar_capture, R.drawable.ic_sysbar_capture_dark);
 
             int dualToneDarkTheme = Utils.getThemeAttr(ctx, R.attr.darkIconTheme);
             int dualToneLightTheme = Utils.getThemeAttr(ctx, R.attr.lightIconTheme);
@@ -407,6 +428,9 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
                 : getBackIcon(mUseCarModeUi, mVertical);
 
         getBackButton().setImageDrawable(backIcon);
+        getVolumeAddButton().setImageDrawable(mVolumeAddIcon);
+        getVolumeSubButton().setImageDrawable(mVolumeSubIcon);
+        getScreenshotButton().setImageDrawable(mScreenshotIcon);
 
         updateRecentsIcon();
 
@@ -816,6 +840,7 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
         dumpButton(pw, "rcnt", getRecentsButton());
         dumpButton(pw, "menu", getMenuButton());
         dumpButton(pw, "a11y", getAccessibilityButton());
+        dumpButton(pw, "screenshot", getScreenshotButton());
 
         pw.println("    }");
     }
