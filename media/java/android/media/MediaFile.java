@@ -54,6 +54,9 @@ public class MediaFile {
     private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_IMY;
 
     // Video file types
+    public static final int FILE_TYPE_TRP     = 18;
+    public static final int FILE_TYPE_FLV     = 19;
+    public static final int FILE_TYPE_MPG     = 20;
     public static final int FILE_TYPE_MP4     = 21;
     public static final int FILE_TYPE_M4V     = 22;
     public static final int FILE_TYPE_3GPP    = 23;
@@ -64,7 +67,7 @@ public class MediaFile {
     public static final int FILE_TYPE_MP2TS   = 28;
     public static final int FILE_TYPE_AVI     = 29;
     public static final int FILE_TYPE_WEBM    = 30;
-    private static final int FIRST_VIDEO_FILE_TYPE = FILE_TYPE_MP4;
+    private static final int FIRST_VIDEO_FILE_TYPE = FILE_TYPE_TRP;
     private static final int LAST_VIDEO_FILE_TYPE = FILE_TYPE_WEBM;
 
     // More video file types
@@ -188,6 +191,8 @@ public class MediaFile {
     static {
         addFileType("MP3", FILE_TYPE_MP3, "audio/mpeg", MtpConstants.FORMAT_MP3, true);
         addFileType("MPGA", FILE_TYPE_MP3, "audio/mpeg", MtpConstants.FORMAT_MP3, false);
+        addFileType("MP1", FILE_TYPE_MP3, "audio/mpeg",MtpConstants.FORMAT_MP3);
+        addFileType("MP2", FILE_TYPE_MP3, "audio/mpeg",MtpConstants.FORMAT_MP3);
         addFileType("M4A", FILE_TYPE_M4A, "audio/mp4", MtpConstants.FORMAT_MPEG, false);
         addFileType("WAV", FILE_TYPE_WAV, "audio/x-wav", MtpConstants.FORMAT_WAV, true);
         addFileType("AMR", FILE_TYPE_AMR, "audio/amr");
@@ -226,6 +231,13 @@ public class MediaFile {
         addFileType("WEBM", FILE_TYPE_WEBM, "video/webm");
         addFileType("TS", FILE_TYPE_MP2TS, "video/mp2ts");
         addFileType("AVI", FILE_TYPE_AVI, "video/avi");
+        addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV);
+        addFileType("TP", FILE_TYPE_MP2TS, "video/mp2ts");
+        addFileType("TRP", FILE_TYPE_TRP, "video/mp2ts");
+        addFileType("ASF", FILE_TYPE_ASF, "video/x-ms-asf");
+        addFileType("M2TS", FILE_TYPE_MP2TS, "video/mp2ts");
+        addFileType("FLV", FILE_TYPE_FLV, "video/flv");
+        addFileType("DAT", FILE_TYPE_MPG, "video/mpg");
 
         if (isWMVEnabled()) {
             addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV, true);
@@ -272,6 +284,7 @@ public class MediaFile {
         addFileType("ZIP", FILE_TYPE_ZIP, "application/zip");
         addFileType("MPG", FILE_TYPE_MP2PS, "video/mp2p");
         addFileType("MPEG", FILE_TYPE_MP2PS, "video/mp2p");
+        addFileType("VOB", FILE_TYPE_MPG, "video/mpg");
     }
 
     public static boolean isAudioFileType(int fileType) {
