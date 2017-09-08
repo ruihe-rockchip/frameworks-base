@@ -231,10 +231,10 @@ public class MediaFile {
         addFileType("WEBM", FILE_TYPE_WEBM, "video/webm");
         addFileType("TS", FILE_TYPE_MP2TS, "video/mp2ts");
         addFileType("AVI", FILE_TYPE_AVI, "video/avi");
-        addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV,true);
+        //addFileType("WMV", FILE_TYPE_WMV, "video/x-ms-wmv", MtpConstants.FORMAT_WMV,true);
         addFileType("TP", FILE_TYPE_MP2TS, "video/mp2ts");
         addFileType("TRP", FILE_TYPE_TRP, "video/mp2ts");
-        addFileType("ASF", FILE_TYPE_ASF, "video/x-ms-asf");
+        //addFileType("ASF", FILE_TYPE_ASF, "video/x-ms-asf");
         addFileType("M2TS", FILE_TYPE_MP2TS, "video/mp2ts");
         addFileType("FLV", FILE_TYPE_FLV, "video/flv");
         addFileType("DAT", FILE_TYPE_MPG, "video/mpg");
