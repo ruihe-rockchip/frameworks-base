@@ -22,9 +22,21 @@ import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
+import android.util.Slog;
+import android.util.Xml;
+
+import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * This class gives you control of the power state of the device.
@@ -398,6 +410,13 @@ public final class PowerManager {
      */
     public static final String REBOOT_RECOVERY = "recovery";
 
+    private File alarmFilter;
+    private File rootDir;
+    /**
+     * @hide
+     */
+    public  List<String> packageList = new ArrayList<String>();
+
     /**
      * The value to pass as the 'reason' argument to reboot() to reboot into
      * recovery mode for applying system updates.
@@ -491,6 +510,57 @@ public final class PowerManager {
         mContext = context;
         mService = service;
         mHandler = handler;
+        //create a xml file to list the packages that will be filterd
+        rootDir = Environment.getRootDirectory();
+        alarmFilter = new File(rootDir, "etc/wake_lock_filter.xml");
+        resolve(alarmFilter);
+     }
+
+    /**
+     * {@hide}
+     */
+    private void resolve(File file) {
+        if (!file.exists()) {
+            Slog.d("lvjinhua", " Failed while trying resolve alarm filter file, not exists");
+            return;
+        }
+
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(file);
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setInput(stream, null);
+
+            int type;
+            do {
+                type = parser.next();
+                if (type == XmlPullParser.START_TAG) {
+                    String tag = parser.getName();
+                    if ("app".equals(tag)) {
+                          String pkgName = parser.getAttributeValue(null, "package");
+                          packageList.add(pkgName);
+                    }
+                }
+            } while (type != XmlPullParser.END_DOCUMENT);
+        } catch (NullPointerException e) {
+            Slog.w(TAG, "Warning, failed parsing wake_lock_filter.xml: " + e);
+        } catch (NumberFormatException e) {
+            Slog.w(TAG, "Warning, failed parsing wake_lock_filter.xml: " + e);
+        } catch (XmlPullParserException e) {
+            Slog.w(TAG, "Warning, failed parsing wake_lock_filter.xml: " + e);
+        } catch (IOException e) {
+            Slog.w(TAG, "Warning, failed parsing wake_lock_filter.xml: " + e);
+        } catch (IndexOutOfBoundsException e) {
+            Slog.w(TAG, "Warning, failed parsing wake_lock_filter.xml: " + e);
+        } finally {
+            if(stream!=null){
+                try{
+                    stream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -1330,6 +1400,14 @@ public final class PowerManager {
 
         private void acquireLocked() {
             if (!mRefCounted || mCount++ == 0) {
+                for(int i=0;i<packageList.size();i++){
+                    String pckname = packageList.get(i);
+                    //Slog.d("lvjinhua","--------------------pckname111="+pckname+",mPackageName="+mPackageName);
+                    if(mPackageName.equals(pckname) || mTag.equals(pckname)){
+                        return;
+                    }
+                }
+
                 // Do this even if the wake lock is already thought to be held (mHeld == true)
                 // because non-reference counted wake locks are not always properly released.
                 // For example, the keyguard's wake lock might be forcibly released by the
