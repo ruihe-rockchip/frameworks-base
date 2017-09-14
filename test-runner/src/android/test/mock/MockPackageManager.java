@@ -1168,4 +1168,20 @@ public class MockPackageManager extends PackageManager {
     public String getInstantAppAndroidId(String packageName, UserHandle user) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * @hide
+     */
+    @Override
+    public int getPackagePerformanceMode(String pkgName) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @hide
+     */
+    @Override
+    public void setPackagePerformanceMode(String pkgName, int mode) {
+        throw new UnsupportedOperationException();
+    }
 }

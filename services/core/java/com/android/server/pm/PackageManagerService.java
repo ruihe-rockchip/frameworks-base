@@ -213,6 +213,7 @@ import android.os.storage.StorageManager;
 import android.os.storage.StorageManagerInternal;
 import android.os.storage.VolumeInfo;
 import android.os.storage.VolumeRecord;
+import android.os.PowerManager;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
 import android.security.KeyStore;
@@ -21797,6 +21798,8 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
 
         public static final int OPTION_SHOW_FILTERS = 1 << 0;
 
+        public static final int DUMP_PERF_MODE = 1 << 16;
+
         private int mTypes;
 
         private int mOptions;
@@ -22045,6 +22048,8 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
                     pw.println("Settings written.");
                     return;
                 }
+            } else if ("perf".equals(cmd)) {
+                dumpState.setDump(DumpState.DUMP_PERF_MODE);
             }
         }
 
@@ -22396,6 +22401,10 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
 
             if (!checkin && dumpState.isDumping(DumpState.DUMP_PERMISSIONS) && packageName == null) {
                 mSettings.dumpRestoredPermissionGrantsLPr(pw, dumpState);
+            }
+
+            if (dumpState.isDumping(DumpState.DUMP_PERF_MODE) && packageName == null) {
+                mSettings.dumpPackagePerformanceMode(pw, dumpState);
             }
 
             if (!checkin && dumpState.isDumping(DumpState.DUMP_FROZEN) && packageName == null) {
@@ -25041,6 +25050,37 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
         synchronized (mPackages) {
             return mInstantAppRegistry.getInstantAppAndroidIdLPw(packageName, userId);
         }
+    }
+
+    /**
+     * @hide
+     */
+    public int getPackagePerformanceMode(String pkgName) {
+        for (int i = 0; i < mSettings.mPerformancePackages.size(); i++) {
+            if (pkgName.toLowerCase().contains(mSettings.mPerformancePackages.get(i).name.toLowerCase())) {
+                return mSettings.mPerformancePackages.get(i).mode;
+            }
+        }
+        return PowerManager.PERFORMANCE_MODE_NORMAL;
+    }
+
+    /**
+     * @hide
+     */
+    public void setPackagePerformanceMode(String pkgName, int mode) {
+        PackagePerformanceSetting setting = null;
+        for (int i = 0; i < mSettings.mPerformancePackages.size(); i++) {
+            if (mSettings.mPerformancePackages.get(i).name.equals(pkgName)) {
+                setting = mSettings.mPerformancePackages.get(i);
+            }
+        }
+        if (setting != null) {
+            setting.setMode(mode);
+        } else {
+            setting = new PackagePerformanceSetting(pkgName, mode);
+            mSettings.mPerformancePackages.add(0, setting);
+        }
+        mSettings.writeLPr();
     }
 }
 

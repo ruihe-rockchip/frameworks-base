@@ -5739,4 +5739,15 @@ public abstract class PackageManager {
      * @hide
      */
     public abstract String getInstantAppAndroidId(String packageName, @NonNull UserHandle user);
+
+    /**
+     * @hide
+     */
+    public abstract int getPackagePerformanceMode(String pkgName);
+
+    /**
+     * @hide
+     */
+    public abstract void setPackagePerformanceMode(String pkgName, int mode);
+
 }

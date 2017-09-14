@@ -630,4 +630,7 @@ interface IPackageManager {
     ComponentName getInstantAppInstallerComponent();
 
     String getInstantAppAndroidId(String packageName, int userId);
+
+    int getPackagePerformanceMode(String pkgName);
+    void setPackagePerformanceMode(String pkgName, int mode);
 }
