@@ -300,7 +300,7 @@ public class NetworkMonitor extends StateMachine {
         setInitialState(mDefaultState);
 
         mIsCaptivePortalCheckEnabled = Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.CAPTIVE_PORTAL_MODE, Settings.Global.CAPTIVE_PORTAL_MODE_PROMPT)
+                Settings.Global.CAPTIVE_PORTAL_MODE, Settings.Global.CAPTIVE_PORTAL_MODE_IGNORE)
                 != Settings.Global.CAPTIVE_PORTAL_MODE_IGNORE;
         mUseHttps = Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.CAPTIVE_PORTAL_USE_HTTPS, 1) == 1;
