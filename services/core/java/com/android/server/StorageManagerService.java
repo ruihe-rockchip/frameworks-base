@@ -1321,6 +1321,11 @@ class StorageManagerService extends IStorageManager.Stub
                 vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;
             }
 
+            if("true".equals(SystemProperties.get("ro.udisk.visible"))){
+                Log.d("xzj","-----for all public volume is visible-----");
+                vol.mountFlags |= VolumeInfo.MOUNT_FLAG_VISIBLE;
+            }
+
             vol.mountUserId = mCurrentUserId;
             mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();
 
