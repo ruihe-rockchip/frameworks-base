@@ -161,8 +161,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     // to capture touch events in that area.
     static final int RESIZE_HANDLE_WIDTH_IN_DP = 30;
 
-    private static final boolean DEBUG_DISABLE_SAVING_SURFACES = false ||
-            ENABLE_TASK_SNAPSHOTS;
+    private static final boolean DEBUG_DISABLE_SAVING_SURFACES = true;
 
     final WindowManagerService mService;
     final WindowManagerPolicy mPolicy;
