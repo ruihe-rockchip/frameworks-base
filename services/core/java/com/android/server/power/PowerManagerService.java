@@ -1716,7 +1716,7 @@ public final class PowerManagerService extends SystemService
 
                 // Tell the notifier whether wireless charging has started so that
                 // it can provide feedback to the user.
-                if (dockedOnWirelessCharger) {
+                if (dockedOnWirelessCharger || mIsPowered) {
                     mNotifier.onWirelessChargingStarted();
                 }
             }
