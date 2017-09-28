@@ -92,13 +92,16 @@ public class NavigationBarInflaterView extends FrameLayout
 
     private boolean mAlternativeOrder;
 
+    private int mDensity;
+
     public NavigationBarInflaterView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mDensity = context.getResources().getConfiguration().densityDpi;
         createInflaters();
         Display display = ((WindowManager)
                 context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         Mode displayMode = display.getMode();
-        isRot0Landscape = displayMode.getPhysicalWidth() > displayMode.getPhysicalHeight();
+        isRot0Landscape = displayMode.getPhysicalWidth() < displayMode.getPhysicalHeight();
     }
 
     private void createInflaters() {
@@ -115,6 +118,18 @@ public class NavigationBarInflaterView extends FrameLayout
         inflateChildren();
         clearViews();
         inflateLayout(getDefaultLayout());
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(mDensity != newConfig.densityDpi || mDensity < 600){
+            mDensity = newConfig.densityDpi;
+            createInflaters();
+            inflateChildren();
+            clearViews();
+            inflateLayout(mCurrentLayout);
+        }
     }
 
     private void inflateChildren() {
