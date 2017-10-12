@@ -244,6 +244,10 @@ public class TaskViewThumbnail extends View {
      */
     public void updateThumbnailMatrix() {
         mThumbnailScale = 1f;
+        if (mFullscreenThumbnailScale == 0) {
+            mFullscreenThumbnailScale = getResources().getFraction(
+                com.android.internal.R.fraction.thumbnail_fullscreen_scale, 1, 1);
+        }
         if (mBitmapShader != null && mThumbnailData != null) {
             // We consider this a stack task if it is not freeform (ie. has no bounds) or has been
             // dragged into the stack from the freeform workspace
