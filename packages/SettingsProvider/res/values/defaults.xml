@@ -189,7 +189,7 @@
     <integer name="def_end_button_behavior">0x2</integer>
 
     <!-- should show the screenshot button default -->
-    <integer name="def_screenshot_button_show">1</integer>
+    <integer name="def_screenshot_button_show">0</integer>
     <!-- the store location of screen capture by default-->
     <string name="def_screenshot_location">internal_storage</string>
 </resources>
