@@ -1275,6 +1275,10 @@ public final class BroadcastQueue {
                         Slog.w(TAG, "Background execution not allowed: receiving "
                                 + r.intent + " to "
                                 + component.flattenToShortString());
+                        String rk_recovery = r.intent.getStringExtra(Intent.EXTRA_REASON);
+                        if("MasterClearConfirm".equals(rk_recovery))
+                        skip = false;
+                        else
                         skip = true;
                     }
                 }
