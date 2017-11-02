@@ -564,6 +564,9 @@ public class UsbDeviceManager {
                 forceRestart = true;
             }
 
+            if (functions == null)
+                forceRestart = true;
+
             // Try to set the enabled functions.
             final String oldFunctions = mCurrentFunctions;
             final boolean oldFunctionsApplied = mCurrentFunctionsApplied;
