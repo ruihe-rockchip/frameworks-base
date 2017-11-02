@@ -102,8 +102,6 @@ public class UsbDeviceManager {
      * ro.bootmode value when phone boots into usual Android.
      */
     private static final String NORMAL_BOOT = "normal";
-    private static final String EMMC_BOOT = "emmc";
-    private static final String NVME_BOOT = "nvme";
 
     private static final String USB_STATE_MATCH =
             "DEVPATH=/devices/virtual/android_usb/android0";
@@ -603,7 +601,7 @@ public class UsbDeviceManager {
 
         private boolean isNormalBoot() {
             String bootMode = SystemProperties.get(BOOT_MODE_PROPERTY, "unknown");
-            if (bootMode.equals(NORMAL_BOOT) || bootMode.equals(EMMC_BOOT) || bootMode.equals(NVME_BOOT) || bootMode.equals("unknown")) {
+            if (bootMode.equals(NORMAL_BOOT) || bootMode.equals("unknown")) {
                 return true;
             }
             return false;
@@ -1239,7 +1237,7 @@ public class UsbDeviceManager {
     public static String getPersistProp(boolean functions) {
         String bootMode = SystemProperties.get(BOOT_MODE_PROPERTY, "unknown");
         String persistProp = USB_PERSISTENT_CONFIG_PROPERTY;
-        if (!(bootMode.equals(NORMAL_BOOT) || bootMode.equals(EMMC_BOOT) || bootMode.equals(NVME_BOOT) || bootMode.equals("unknown"))) {
+        if (!(bootMode.equals(NORMAL_BOOT) || bootMode.equals("unknown"))) {
             if (functions == true) {
                 persistProp = "persist.sys.usb." + bootMode + ".func";
             } else {
