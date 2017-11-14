@@ -2697,13 +2697,6 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_MEDIA_SCANNER_SCAN_FILE = "android.intent.action.MEDIA_SCANNER_SCAN_FILE";
 
    /**
-     * Broadcast Action:  Request the media scanner to scan a file and add it to the media database.
-     * The path to the file is contained in the Intent.mData field.
-     */
-    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
-    public static final String ACTION_MEDIA_SCANNER_SCAN_FODER = "android.intent.action.MEDIA_SCANNER_SCAN_FODER";
-
-   /**
      * Broadcast Action:  The "Media Button" was pressed.  Includes a single
      * extra field, {@link #EXTRA_KEY_EVENT}, containing the key event that
      * caused the broadcast.

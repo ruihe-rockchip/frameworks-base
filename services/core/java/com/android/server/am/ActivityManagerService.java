@@ -18932,7 +18932,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 || Intent.ACTION_DISMISS_KEYBOARD_SHORTCUTS.equals(action)
                 || Intent.ACTION_MEDIA_BUTTON.equals(action)
                 || Intent.ACTION_MEDIA_SCANNER_SCAN_FILE.equals(action)
-                || Intent.ACTION_MEDIA_SCANNER_SCAN_FODER.equals(action)
                 || Intent.ACTION_SHOW_KEYBOARD_SHORTCUTS.equals(action)
                 || Intent.ACTION_MASTER_CLEAR.equals(action)
                 || Intent.ACTION_FACTORY_RESET.equals(action)
