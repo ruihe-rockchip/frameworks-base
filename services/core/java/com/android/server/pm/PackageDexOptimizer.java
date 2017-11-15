@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.os.FileUtils;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.WorkSource;
 import android.util.Log;
@@ -213,6 +214,10 @@ public class PackageDexOptimizer {
                 + " dexoptFlags=" + printDexoptFlags(dexoptFlags)
                 + " target-filter=" + compilerFilter + " oatDir=" + oatDir
                 + " sharedLibraries=" + sharedLibrariesPath);
+
+        if(pkg.applicationInfo.packageName.contains("com.android.compatibility.common.deviceinfo")){
+            SystemProperties.set("cts_gts.status","true");
+        }
 
         try {
             long startTime = System.currentTimeMillis();
