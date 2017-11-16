@@ -243,9 +243,9 @@ public class UserSwitcherController {
                                 || currentUserInfo.id == UserHandle.USER_SYSTEM)
                         && systemCanCreateUsers;
                 boolean anyoneCanCreateUsers = systemCanCreateUsers && addUsersWhenLocked;
-                boolean canCreateGuest = (currentUserCanCreateUsers || anyoneCanCreateUsers)
+                boolean canCreateGuest = (currentUserCanCreateUsers && anyoneCanCreateUsers)
                         && guestRecord == null;
-                boolean canCreateUser = (currentUserCanCreateUsers || anyoneCanCreateUsers)
+                boolean canCreateUser = (currentUserCanCreateUsers && anyoneCanCreateUsers)
                         && mUserManager.canAddMoreUsers();
                 boolean createIsRestricted = !addUsersWhenLocked;
 
