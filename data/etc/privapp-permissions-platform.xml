@@ -372,6 +372,6 @@ applications that come with the platform
     <privapp-permissions package="com.cghs.stresstest">
         <permission name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
         <permission name="android.permission.WRITE_MEDIA_STORAGE" />
-        <permission name-"android.permission.WRITE_SECURE_SETTINGS"/>
+        <permission name="android.permission.WRITE_SECURE_SETTINGS"/>
     </privapp-permissions>
 </permissions>
