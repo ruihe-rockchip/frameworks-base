@@ -218,6 +218,11 @@ public class PackageDexOptimizer {
         if(pkg.applicationInfo.packageName.contains("com.android.compatibility.common.deviceinfo")){
             SystemProperties.set("cts_gts.status","true");
         }
+        if(pkg.applicationInfo.packageName.contains("com.google.android.media.gts")){
+            SystemProperties.set("cts_gts.media.gts","true");
+        }else if("true".equals(SystemProperties.get("cts_gts.media.gts"))){
+            SystemProperties.set("cts_gts.media.gts","");
+        }
 
         try {
             long startTime = System.currentTimeMillis();
