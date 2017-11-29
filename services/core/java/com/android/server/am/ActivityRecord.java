@@ -240,7 +240,7 @@ final class ActivityRecord extends ConfigurationContainer implements AppWindowCo
     private int theme;              // resource identifier of activity's theme.
     private int realTheme;          // actual theme resource we will use, never 0.
     private int windowFlags;        // custom window flags for preview window.
-    private TaskRecord task;        // the task this is in.
+    public TaskRecord task;        // the task this is in.
     private long createTime = System.currentTimeMillis();
     long displayStartTime;  // when we started launching this activity
     long fullyDrawnStartTime; // when we started launching this activity
