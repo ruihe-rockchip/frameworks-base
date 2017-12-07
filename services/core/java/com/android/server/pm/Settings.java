@@ -232,6 +232,7 @@ final class Settings {
     private static final String ATTR_APP_LINK_GENERATION = "app-link-generation";
     private static final String ATTR_INSTALL_REASON = "install-reason";
     private static final String ATTR_INSTANT_APP = "instant-app";
+    private static final String ATTR_VIRTUAL_PRELOAD = "virtual-preload";
 
     private static final String ATTR_PACKAGE_NAME = "packageName";
     private static final String ATTR_FINGERPRINT = "fingerprint";
@@ -762,8 +763,9 @@ final class Settings {
             PackageSetting disabledPkg, String realPkgName, SharedUserSetting sharedUser,
             File codePath, File resourcePath, String legacyNativeLibraryPath, String primaryCpuAbi,
             String secondaryCpuAbi, int versionCode, int pkgFlags, int pkgPrivateFlags,
-            UserHandle installUser, boolean allowInstall, boolean instantApp, String parentPkgName,
-            List<String> childPkgNames, UserManagerService userManager,
+            UserHandle installUser, boolean allowInstall, boolean instantApp,
+            boolean virtualPreload, String parentPkgName, List<String> childPkgNames,
+            UserManagerService userManager,
             String[] usesStaticLibraries, int[] usesStaticLibrariesVersions) {
         final PackageSetting pkgSetting;
         if (originalPkg != null) {
@@ -825,6 +827,7 @@ final class Settings {
                                 false /*hidden*/,
                                 false /*suspended*/,
                                 instantApp,
+                                virtualPreload,
                                 null /*lastDisableAppCaller*/,
                                 null /*enabledComponents*/,
                                 null /*disabledComponents*/,
@@ -1758,6 +1761,7 @@ final class Settings {
                                 false /*hidden*/,
                                 false /*suspended*/,
                                 false /*instantApp*/,
+                                false /*virtualPreload*/,
                                 null /*lastDisableAppCaller*/,
                                 null /*enabledComponents*/,
                                 null /*disabledComponents*/,
@@ -1831,6 +1835,8 @@ final class Settings {
                             ATTR_BLOCK_UNINSTALL, false);
                     final boolean instantApp = XmlUtils.readBooleanAttribute(parser,
                             ATTR_INSTANT_APP, false);
+                    final boolean virtualPreload = XmlUtils.readBooleanAttribute(parser,
+                            ATTR_VIRTUAL_PRELOAD, false);
                     final int enabled = XmlUtils.readIntAttribute(parser, ATTR_ENABLED,
                             COMPONENT_ENABLED_STATE_DEFAULT);
                     final String enabledCaller = parser.getAttributeValue(null,
@@ -1870,8 +1876,8 @@ final class Settings {
                         setBlockUninstallLPw(userId, name, true);
                     }
                     ps.setUserState(userId, ceDataInode, enabled, installed, stopped, notLaunched,
-                            hidden, suspended, instantApp, enabledCaller, enabledComponents,
-                            disabledComponents, verifState, linkGeneration,
+                            hidden, suspended, instantApp, virtualPreload, enabledCaller,
+                            enabledComponents, disabledComponents, verifState, linkGeneration,
                             installReason);
                 } else if (tagName.equals("preferred-activities")) {
                     readPreferredActivitiesLPw(parser, userId);
@@ -2181,6 +2187,9 @@ final class Settings {
                 }
                 if (ustate.instantApp) {
                     serializer.attribute(null, ATTR_INSTANT_APP, "true");
+                }
+                if (ustate.virtualPreload) {
+                    serializer.attribute(null, ATTR_VIRTUAL_PRELOAD, "true");
                 }
                 if (ustate.enabled != COMPONENT_ENABLED_STATE_DEFAULT) {
                     serializer.attribute(null, ATTR_ENABLED,
@@ -4756,6 +4765,7 @@ final class Settings {
                 pw.print(ps.getStopped(user.id) ? "S" : "s");
                 pw.print(ps.getNotLaunched(user.id) ? "l" : "L");
                 pw.print(ps.getInstantApp(user.id) ? "IA" : "ia");
+                pw.print(ps.getVirtulalPreload(user.id) ? "VPI" : "vpi");
                 pw.print(",");
                 pw.print(ps.getEnabled(user.id));
                 String lastDisabledAppCaller = ps.getLastDisabledAppCaller(user.id);
@@ -5010,7 +5020,9 @@ final class Settings {
             pw.print(" enabled=");
             pw.print(ps.getEnabled(user.id));
             pw.print(" instant=");
-            pw.println(ps.getInstantApp(user.id));
+            pw.print(ps.getInstantApp(user.id));
+            pw.print(" virtual=");
+            pw.println(ps.getVirtulalPreload(user.id));
 
             String[] overlayPaths = ps.getOverlayPaths(user.id);
             if (overlayPaths != null && overlayPaths.length > 0) {

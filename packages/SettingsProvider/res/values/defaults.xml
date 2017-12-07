@@ -192,4 +192,6 @@
     <integer name="def_screenshot_button_show">0</integer>
     <!-- the store location of screen capture by default-->
     <string name="def_screenshot_location">internal_storage</string>
+    <!-- default setting for Settings.Global.DEFAULT_RESTRICT_BACKGROUND_DATA -->
+    <bool name="def_restrict_background_data">false</bool>
 </resources>

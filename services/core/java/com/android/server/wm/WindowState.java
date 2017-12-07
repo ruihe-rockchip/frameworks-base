@@ -46,6 +46,7 @@ import static android.view.WindowManager.LayoutParams.FORMAT_CHANGED;
 import static android.view.WindowManager.LayoutParams.LAST_SUB_WINDOW;
 import static android.view.WindowManager.LayoutParams.MATCH_PARENT;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_COMPATIBLE_WINDOW;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_WILL_NOT_REPLACE_ON_RELAUNCH;
@@ -59,7 +60,9 @@ import static android.view.WindowManager.LayoutParams.TYPE_DOCK_DIVIDER;
 import static android.view.WindowManager.LayoutParams.TYPE_DRAWN_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
+import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
+import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_DRAG_RESIZING_DOCKED;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_DRAG_RESIZING_FREEFORM;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
@@ -207,6 +210,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean mPolicyVisibilityAfterAnim = true;
     private boolean mAppOpVisibility = true;
     boolean mPermanentlyHidden; // the window should never be shown again
+    // This is a non-system overlay window that is currently force hidden.
+    private boolean mForceHideNonSystemOverlayWindow;
     boolean mAppFreezing;
     boolean mHidden;    // Used to determine if to show child windows.
     boolean mWallpaperVisible;  // for wallpaper, what was last vis report?
@@ -237,7 +242,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * We'll send configuration to client only if it is different from the last applied one and
      * client won't perform unnecessary updates.
      */
-    private final Configuration mLastReportedConfiguration = new Configuration();
+    private final MergedConfiguration mLastReportedConfiguration = new MergedConfiguration();
 
     /**
      * Actual position of the surface shown on-screen (may be modified by animation). These are
@@ -440,7 +445,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * Set when the orientation is changing and this window has not yet
      * been updated for the new orientation.
      */
-    boolean mOrientationChanging;
+    private boolean mOrientationChanging;
+
+    /**
+     * Sometimes in addition to the mOrientationChanging
+     * flag we report that the orientation is changing
+     * due to a mismatch in current and reported configuration.
+     *
+     * In the case of timeout we still need to make sure we
+     * leave the orientation changing state though, so we
+     * use this as a special time out escape hatch.
+     */
+    private boolean mOrientationChangeTimedOut;
 
     /**
      * The orientation during the last visible call to relayout. If our
@@ -559,6 +575,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     final Rect mLastSurfaceInsets = new Rect();
 
     /**
+     * A flag set by the {@link WindowState} parent to indicate that the parent has examined this
+     * {@link WindowState} in its overall drawing context. This book-keeping allows the parent to
+     * make sure all children have been considered.
+     */
+    private boolean mDrawnStateEvaluated;
+
+    /**
      * Compares two window sub-layers and returns -1 if the first is lesser than the second in terms
      * of z-order and 1 otherwise.
      */
@@ -674,6 +697,27 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         mSession.windowAddedLocked(mAttrs.packageName);
     }
 
+    /**
+     * Returns whether this {@link WindowState} has been considered for drawing by its parent.
+     */
+    boolean getDrawnStateEvaluated() {
+        return mDrawnStateEvaluated;
+    }
+
+    /**
+     * Sets whether this {@link WindowState} has been considered for drawing by its parent. Should
+     * be cleared when detached from parent.
+     */
+    void setDrawnStateEvaluated(boolean evaluated) {
+        mDrawnStateEvaluated = evaluated;
+    }
+
+    @Override
+    void onParentSet() {
+        super.onParentSet();
+        setDrawnStateEvaluated(false /*evaluated*/);
+    }
+
     @Override
     public int getOwningUid() {
         return mOwnerUid;
@@ -687,6 +731,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     public boolean canAddInternalSystemWindow() {
         return mOwnerCanAddInternalSystemWindow;
+    }
+
+    @Override
+    public boolean canAcquireSleepToken() {
+        return mSession.mCanAcquireSleepToken;
     }
 
     /**
@@ -725,7 +774,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // If the task has temp inset bounds set, we have to make sure all its windows uses
         // the temp inset frame. Otherwise different display frames get applied to the main
         // window and the child window, making them misaligned.
-        if (inFullscreenContainer) {
+        if (inFullscreenContainer || isLetterboxedAppWindow()) {
             mInsetFrame.setEmpty();
         } else if (task != null && isInMultiWindowMode()) {
             task.getTempInsetBounds(mInsetFrame);
@@ -1155,7 +1204,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // then we need to hold off on unfreezing the display until this window has been
             // redrawn; to do that, we need to go through the process of getting informed by the
             // application when it has finished drawing.
-            if (mOrientationChanging || dragResizingChanged || isResizedWhileNotDragResizing()) {
+            if (getOrientationChanging() || dragResizingChanged
+                    || isResizedWhileNotDragResizing()) {
                 if (DEBUG_SURFACE_TRACE || DEBUG_ANIM || DEBUG_ORIENTATION || DEBUG_RESIZE) {
                     Slog.v(TAG_WM, "Orientation or resize start waiting for draw"
                             + ", mDrawState=DRAW_PENDING in " + this
@@ -1170,15 +1220,38 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 if (DEBUG_RESIZE || DEBUG_ORIENTATION) Slog.v(TAG_WM, "Resizing window " + this);
                 mService.mResizingWindows.add(this);
             }
-        } else if (mOrientationChanging) {
+        } else if (getOrientationChanging()) {
             if (isDrawnLw()) {
                 if (DEBUG_ORIENTATION) Slog.v(TAG_WM, "Orientation not waiting for draw in "
                         + this + ", surfaceController " + winAnimator.mSurfaceController);
-                mOrientationChanging = false;
+                setOrientationChanging(false);
                 mLastFreezeDuration = (int)(SystemClock.elapsedRealtime()
                         - mService.mDisplayFreezeTime);
             }
         }
+    }
+
+    boolean getOrientationChanging() {
+        // In addition to the local state flag, we must also consider the difference in the last
+        // reported configuration vs. the current state. If the client code has not been informed of
+        // the change, logic dependent on having finished processing the orientation, such as
+        // unfreezing, could be improperly triggered.
+        // TODO(b/62846907): Checking against {@link mLastReportedConfiguration} could be flaky as
+        //                   this is not necessarily what the client has processed yet. Find a
+        //                   better indicator consistent with the client.
+        return (mOrientationChanging || (isVisible()
+                && getConfiguration().orientation != getLastReportedConfiguration().orientation))
+                && !mSeamlesslyRotated
+                && !mOrientationChangeTimedOut;
+    }
+
+    void setOrientationChanging(boolean changing) {
+        mOrientationChanging = changing;
+        mOrientationChangeTimedOut = false;
+    }
+
+    void orientationChangeTimedOut() {
+        mOrientationChangeTimedOut = true;
     }
 
     DisplayContent getDisplayContent() {
@@ -1411,10 +1484,25 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     public boolean canAffectSystemUiFlags() {
         final boolean shown = mWinAnimator.getShown();
-        final boolean exiting = mAnimatingExit || mDestroying
-                || mAppToken != null && mAppToken.hidden;
+
+        // We only consider the app to be exiting when the animation has started. After the app
+        // transition is executed the windows are marked exiting before the new windows have been
+        // shown. Thus, wait considering a window to be exiting after the animation has actually
+        // started.
+        final boolean appAnimationStarting = mAppToken != null
+                && mAppToken.mAppAnimator.isAnimationStarting();
+        final boolean exitingSelf = mAnimatingExit && (!mWinAnimator.isAnimationStarting()
+                && !appAnimationStarting);
+        final boolean appExiting = mAppToken != null && mAppToken.hidden && !appAnimationStarting;
+
+        final boolean exiting = exitingSelf || mDestroying || appExiting;
         final boolean translucent = mAttrs.alpha == 0.0f;
-        return shown && !exiting && !translucent;
+
+        // If we are entering with a dummy animation, avoid affecting SystemUI flags until the
+        // transition is starting.
+        final boolean enteringWithDummyAnimation =
+                mWinAnimator.isDummyAnimation() && mWinAnimator.mShownAlpha == 0f;
+        return shown && !exiting && !translucent && !enteringWithDummyAnimation;
     }
 
     /**
@@ -1632,7 +1720,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean adjustedForMinimizedDockOrIme = task != null
                 && (task.mStack.isAdjustedForMinimizedDockedStack()
                 || task.mStack.isAdjustedForIme());
-        if (mService.okToDisplay()
+        if (mToken.okToAnimate()
                 && (mAttrs.privateFlags & PRIVATE_FLAG_NO_MOVE_ANIMATION) == 0
                 && !isDragResizing() && !adjustedForMinimizedDockOrIme
                 && (task == null || getTask().mStack.hasMovementAnimations())
@@ -1680,7 +1768,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     /** Returns true if last applied config was not yet requested by client. */
     boolean isConfigChanged() {
-        return !mLastReportedConfiguration.equals(getConfiguration());
+        return !getLastReportedConfiguration().equals(getConfiguration());
     }
 
     void onWindowReplacementTimeout() {
@@ -1801,7 +1889,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // First, see if we need to run an animation. If we do, we have to hold off on removing the
         // window until the animation is done. If the display is frozen, just remove immediately,
         // since the animation wouldn't be seen.
-        if (mHasSurface && mService.okToDisplay()) {
+        if (mHasSurface && mToken.okToAnimate()) {
             if (mWillReplaceWindow) {
                 // This window is going to be replaced. We need to keep it around until the new one
                 // gets added, then we will get rid of this one.
@@ -1941,6 +2029,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return false;
         }
 
+        final boolean windowsAreFocusable = mAppToken == null || mAppToken.windowsAreFocusable();
+        if (!windowsAreFocusable) {
+            // This window can't be an IME target if the app's windows should not be focusable.
+            return false;
+        }
+
         final int fl = mAttrs.flags & (FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM);
         final int type = mAttrs.type;
 
@@ -1974,6 +2068,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (dc == null) {
             return;
         }
+
+        // If layout is currently deferred, we want to hold of with updating the layers.
+        if (mService.mWindowPlacerLocked.isLayoutDeferred()) {
+            return;
+        }
         final DimLayer.DimLayerUser dimLayerUser = getDimLayerUser();
         if (dimLayerUser != null && dc.mDimLayerController.isDimming(dimLayerUser, mWinAnimator)) {
             // Force an animation pass just to update the mDimLayer layer.
@@ -1986,7 +2085,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             super(inputChannel, mService.mH.getLooper());
         }
         @Override
-        public void onInputEvent(InputEvent event) {
+        public void onInputEvent(InputEvent event, int displayId) {
             finishInputEvent(event, true);
         }
     }
@@ -2206,8 +2305,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
-    void prepareWindowToDisplayDuringRelayout(MergedConfiguration mergedConfiguration,
-            boolean wasVisible) {
+    void prepareWindowToDisplayDuringRelayout(boolean wasVisible) {
         // We need to turn on screen regardless of visibility.
         if ((mAttrs.flags & FLAG_TURN_SCREEN_ON) != 0) {
             if (DEBUG_VISIBILITY) Slog.v(TAG, "Relayout window turning screen on: " + this);
@@ -2226,19 +2324,27 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mLayoutNeeded = true;
         }
 
-        if (isDrawnLw() && mService.okToDisplay()) {
+        if (isDrawnLw() && mToken.okToAnimate()) {
             mWinAnimator.applyEnterAnimationLocked();
         }
+    }
 
-        if (isConfigChanged()) {
-            final Configuration globalConfig = mService.mRoot.getConfiguration();
-            final Configuration overrideConfig = getMergedOverrideConfiguration();
-            mergedConfiguration.setConfiguration(globalConfig, overrideConfig);
-            if (DEBUG_CONFIGURATION) Slog.i(TAG, "Window " + this
-                    + " visible with new global config: " + globalConfig
-                    + " merged override config: " + overrideConfig);
-            mLastReportedConfiguration.setTo(getConfiguration());
-        }
+    void getMergedConfiguration(MergedConfiguration outConfiguration) {
+        final Configuration globalConfig = mService.mRoot.getConfiguration();
+        final Configuration overrideConfig = getMergedOverrideConfiguration();
+        outConfiguration.setConfiguration(globalConfig, overrideConfig);
+    }
+
+    void setLastReportedMergedConfiguration(MergedConfiguration config) {
+        mLastReportedConfiguration.setTo(config);
+    }
+
+    void getLastReportedMergedConfiguration(MergedConfiguration config) {
+        config.setTo(mLastReportedConfiguration);
+    }
+
+    private Configuration getLastReportedConfiguration() {
+        return mLastReportedConfiguration.getMergedConfiguration();
     }
 
     void adjustStartingWindowFlags() {
@@ -2370,6 +2476,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // to handle their windows being removed from under them.
             return false;
         }
+        if (mForceHideNonSystemOverlayWindow) {
+            // This is an alert window that is currently force hidden.
+            return false;
+        }
         if (mPolicyVisibility && mPolicyVisibilityAfterAnim) {
             // Already showing.
             return false;
@@ -2378,7 +2488,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (doAnimation) {
             if (DEBUG_VISIBILITY) Slog.v(TAG, "doAnimation: mPolicyVisibility="
                     + mPolicyVisibility + " mAnimation=" + mWinAnimator.mAnimation);
-            if (!mService.okToDisplay()) {
+            if (!mToken.okToAnimate()) {
                 doAnimation = false;
             } else if (mPolicyVisibility && mWinAnimator.mAnimation == null) {
                 // Check for the case where we are currently visible and
@@ -2408,7 +2518,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     boolean hideLw(boolean doAnimation, boolean requestAnim) {
         if (doAnimation) {
-            if (!mService.okToDisplay()) {
+            if (!mToken.okToAnimate()) {
                 doAnimation = false;
             }
         }
@@ -2444,6 +2554,22 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mService.updateFocusedWindowLocked(UPDATE_FOCUS_NORMAL, false /* updateImWindows */);
         }
         return true;
+    }
+
+    void setForceHideNonSystemOverlayWindowIfNeeded(boolean forceHide) {
+        if (mOwnerCanAddInternalSystemWindow
+                || (!isSystemAlertWindowType(mAttrs.type) && mAttrs.type != TYPE_TOAST)) {
+            return;
+        }
+        if (mForceHideNonSystemOverlayWindow == forceHide) {
+            return;
+        }
+        mForceHideNonSystemOverlayWindow = forceHide;
+        if (forceHide) {
+            hideLw(true /* doAnimation */, true /* requestAnim */);
+        } else {
+            showLw(true /* doAnimation */, true /* requestAnim */);
+        }
     }
 
     public void setAppOpVisibilityLw(boolean state) {
@@ -2635,10 +2761,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         mAppFreezing = false;
 
-        if (mHasSurface && !mOrientationChanging
+        if (mHasSurface && !getOrientationChanging()
                 && mService.mWindowsFreezingScreen != WINDOWS_FREEZING_SCREENS_TIMEOUT) {
             if (DEBUG_ORIENTATION) Slog.v(TAG_WM, "set mOrientationChanging of " + this);
-            mOrientationChanging = true;
+            setOrientationChanging(true);
             mService.mRoot.mOrientationChangeComplete = false;
         }
         mLastFreezeDuration = 0;
@@ -3004,14 +3130,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         try {
             if (DEBUG_RESIZE || DEBUG_ORIENTATION) Slog.v(TAG, "Reporting new frame to " + this
                     + ": " + mCompatFrame);
-            final MergedConfiguration mergedConfiguration;
-            if (isConfigChanged()) {
-                mergedConfiguration = new MergedConfiguration(mService.mRoot.getConfiguration(),
-                        getMergedOverrideConfiguration());
-                mLastReportedConfiguration.setTo(mergedConfiguration.getMergedConfiguration());
-            } else {
-                mergedConfiguration = null;
-            }
+            final MergedConfiguration mergedConfiguration =
+                    new MergedConfiguration(mService.mRoot.getConfiguration(),
+                    getMergedOverrideConfiguration());
+
+            setLastReportedMergedConfiguration(mergedConfiguration);
+
             if (DEBUG_ORIENTATION && mWinAnimator.mDrawState == DRAW_PENDING)
                 Slog.i(TAG, "Resizing " + this + " WITH DRAW PENDING");
 
@@ -3059,7 +3183,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mWinAnimator.mSurfaceResized = false;
             mReportOrientationChanged = false;
         } catch (RemoteException e) {
-            mOrientationChanging = false;
+            setOrientationChanging(false);
             mLastFreezeDuration = (int)(SystemClock.elapsedRealtime()
                     - mService.mDisplayFreezeTime);
             // We are assuming the hosting process is dead or in a zombie state.
@@ -3152,6 +3276,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return false;
         }
         return !isInMultiWindowMode();
+    }
+
+    /** @return true when the window is in fullscreen task, but has non-fullscreen bounds set. */
+    boolean isLetterboxedAppWindow() {
+        final Task task = getTask();
+        final boolean taskIsFullscreen = task != null && task.isFullscreen();
+        final boolean appWindowIsFullscreen = mAppToken != null && !mAppToken.hasBounds();
+
+        return taskIsFullscreen && !appWindowIsFullscreen;
     }
 
     /** Returns the appropriate bounds to use for computing frames. */
@@ -3318,7 +3451,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 pw.print(prefix); pw.print("mAppToken="); pw.println(mAppToken);
                 pw.print(prefix); pw.print(" isAnimatingWithSavedSurface()=");
                 pw.print(isAnimatingWithSavedSurface());
-                pw.print(" mAppDied=");pw.println(mAppDied);
+                pw.print(" mAppDied=");pw.print(mAppDied);
+                pw.print(prefix); pw.print("drawnStateEvaluated=");
+                        pw.print(getDrawnStateEvaluated());
+                pw.print(prefix); pw.print("mightAffectAllDrawn=");
+                        pw.println(mightAffectAllDrawn(false /*visibleOnly*/));
             }
             pw.print(prefix); pw.print("mViewVisibility=0x");
             pw.print(Integer.toHexString(mViewVisibility));
@@ -3329,7 +3466,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             pw.println(Integer.toHexString(mSystemUiVisibility));
         }
         if (!mPolicyVisibility || !mPolicyVisibilityAfterAnim || !mAppOpVisibility
-                || isParentWindowHidden()|| mPermanentlyHidden) {
+                || isParentWindowHidden()|| mPermanentlyHidden || mForceHideNonSystemOverlayWindow) {
             pw.print(prefix); pw.print("mPolicyVisibility=");
                     pw.print(mPolicyVisibility);
                     pw.print(" mPolicyVisibilityAfterAnim=");
@@ -3337,7 +3474,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     pw.print(" mAppOpVisibility=");
                     pw.print(mAppOpVisibility);
                     pw.print(" parentHidden="); pw.print(isParentWindowHidden());
-                    pw.print(" mPermanentlyHidden="); pw.println(mPermanentlyHidden);
+                    pw.print(" mPermanentlyHidden="); pw.print(mPermanentlyHidden);
+                    pw.print(" mForceHideNonSystemOverlayWindow="); pw.println(
+                    mForceHideNonSystemOverlayWindow);
         }
         if (!mRelayoutCalled || mLayoutNeeded) {
             pw.print(prefix); pw.print("mRelayoutCalled="); pw.print(mRelayoutCalled);
@@ -3362,7 +3501,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
             pw.print(prefix); pw.print("mFullConfiguration="); pw.println(getConfiguration());
             pw.print(prefix); pw.print("mLastReportedConfiguration=");
-                    pw.println(mLastReportedConfiguration);
+                    pw.println(getLastReportedConfiguration());
         }
         pw.print(prefix); pw.print("mHasSurface="); pw.print(mHasSurface);
                 pw.print(" mShownPosition="); mShownPosition.printShortString(pw);
@@ -3418,10 +3557,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     pw.print(" mDestroying="); pw.print(mDestroying);
                     pw.print(" mRemoved="); pw.println(mRemoved);
         }
-        if (mOrientationChanging || mAppFreezing || mTurnOnScreen
+        if (getOrientationChanging() || mAppFreezing || mTurnOnScreen
                 || mReportOrientationChanged) {
             pw.print(prefix); pw.print("mOrientationChanging=");
                     pw.print(mOrientationChanging);
+                    pw.print(" configOrientationChanging=");
+                    pw.print(getLastReportedConfiguration().orientation
+                            != getConfiguration().orientation);
                     pw.print(" mAppFreezing="); pw.print(mAppFreezing);
                     pw.print(" mTurnOnScreen="); pw.print(mTurnOnScreen);
                     pw.print(" mReportOrientationChanged="); pw.println(mReportOrientationChanged);
@@ -3458,6 +3600,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (computeDragResizing()) {
             pw.print(prefix); pw.println("computeDragResizing=" + computeDragResizing());
         }
+        pw.print(prefix); pw.println("isOnScreen=" + isOnScreen());
+        pw.print(prefix); pw.println("isVisible=" + isVisible());
     }
 
     @Override
@@ -3590,6 +3734,17 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean layoutInParentFrame() {
         return mIsChildWindow
                 && (mAttrs.privateFlags & PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME) != 0;
+    }
+
+    /**
+     * Returns true if any window added by an application process that if of type
+     * {@link android.view.WindowManager.LayoutParams#TYPE_TOAST} or that requires that requires
+     * {@link android.app.AppOpsManager#OP_SYSTEM_ALERT_WINDOW} permission should be hidden when
+     * this window is visible.
+     */
+    boolean hideNonSystemOverlayWindowsWhenVisible() {
+        return (mAttrs.privateFlags & PRIVATE_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS) != 0
+                && mSession.mCanHideNonSystemOverlayWindows;
     }
 
     /** Returns the parent window if this is a child of another window, else null. */
@@ -3834,6 +3989,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         windowInfo.type = mAttrs.type;
         windowInfo.layer = mLayer;
         windowInfo.token = mClient.asBinder();
+        if (mAppToken != null) {
+            windowInfo.activityToken = mAppToken.appToken.asBinder();
+        }
         windowInfo.title = mAttrs.accessibilityTitle;
         windowInfo.accessibilityIdOfAnchor = mAttrs.accessibilityIdOfAnchor;
         windowInfo.focused = isFocused();
@@ -4341,8 +4499,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return !mLastSurfaceInsets.equals(mAttrs.surfaceInsets);
     }
 
-    int relayoutVisibleWindow(MergedConfiguration mergedConfiguration, int result, int attrChanges,
-            int oldVisibility) {
+    int relayoutVisibleWindow(int result, int attrChanges, int oldVisibility) {
         final boolean wasVisible = isVisibleLw();
 
         result |= (!wasVisible || !isDrawnLw()) ? RELAYOUT_RES_FIRST_TIME : 0;
@@ -4365,7 +4522,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         mWinAnimator.mEnteringAnimation = true;
 
-        prepareWindowToDisplayDuringRelayout(mergedConfiguration, wasVisible);
+        prepareWindowToDisplayDuringRelayout(wasVisible);
 
         if ((attrChanges & FORMAT_CHANGED) != 0) {
             // If the format can't be changed in place, preserve the old surface until the app draws
