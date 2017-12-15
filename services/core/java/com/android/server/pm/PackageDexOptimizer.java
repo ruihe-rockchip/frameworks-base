@@ -244,7 +244,8 @@ public class PackageDexOptimizer {
                 + " target-filter=" + compilerFilter + " oatDir=" + oatDir
                 + " sharedLibraries=" + sharedLibrariesPath);
 
-        if(pkg.applicationInfo.packageName.contains("com.android.compatibility.common.deviceinfo")){
+	if(pkg.applicationInfo.packageName.contains("com.android.compatibility.common.deviceinfo")
+		||pkg.applicationInfo.packageName.contains("android.security.cts")){//maybe  endsWith(".cts") ?
             SystemProperties.set("cts_gts.status","true");
         }
         if(pkg.applicationInfo.packageName.contains("com.google.android.media.gts")){
