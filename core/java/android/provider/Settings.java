@@ -9809,12 +9809,41 @@ public final class Settings {
          public static final int ENCODED_SURROUND_OUTPUT_ALWAYS = 2;
 
         /**
+         * AUDIO OUTPUT DEVICE flags
+         * AUDIO_OUTPUT_DEFAULT
+         * @hide
+         */
+         public static final int AUDIO_OUTPUT_DEFAULT = 0;
+
+        /**
+         * AUDIO OUTPUT DEVICE flags
+         * AUDIO_OUTPUT_SPDIF
+         * @hide
+         */
+         public static final int AUDIO_OUTPUT_SPDIF = 1;
+
+        /**
+         * AUDIO OUTPUT DEVICE flags
+         * AUDIO_OUTPUT_HDMI
+         * @hide
+         */
+         public static final int AUDIO_OUTPUT_HDMI = 2;
+
+        /**
          * Set to ENCODED_SURROUND_OUTPUT_AUTO,
          * ENCODED_SURROUND_OUTPUT_NEVER or
          * ENCODED_SURROUND_OUTPUT_ALWAYS
          * @hide
          */
         public static final String ENCODED_SURROUND_OUTPUT = "encoded_surround_output";
+
+        /**
+         * Set to AUDIO_OUTPUT_DEFAULT,
+         * AUDIO_OUTPUT_SPDIF or
+         * AUDIO_OUTPUT_HDMI
+         * @hide
+         */
+        public static final String AUDIO_OUTPUT_DEVICE = "audio_output_device";
 
         /**
          * Persisted safe headphone volume management state by AudioService
@@ -10319,6 +10348,7 @@ public final class Settings {
             CALL_AUTO_RETRY,
             DOCK_AUDIO_MEDIA_ENABLED,
             ENCODED_SURROUND_OUTPUT,
+            AUDIO_OUTPUT_DEVICE,
             LOW_POWER_MODE_TRIGGER_LEVEL,
             BLUETOOTH_ON
         };
