@@ -72,6 +72,7 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SELinux;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -2448,15 +2449,19 @@ public class WallpaperManagerService extends IWallpaperManager.Stub {
             wallpaper.allowBackup = true;
             mWallpaperMap.put(userId, wallpaper);
             if (!wallpaper.cropExists()) {
-                //When system first bootup,lock wallpaper share with system,let's save it.
-                File mWallpaperDir = getWallpaperDir(wallpaper.userId);
-                File mWallpaperFile = new File(mWallpaperDir, WALLPAPER);
-                File mWallpaperCropFile = new File(mWallpaperDir, WALLPAPER_CROP);
-                Bitmap bmp=getDefaultWallpaper(mContext);
-                saveFile(bmp,mWallpaperFile.getAbsolutePath());
-                //FileUtils.copyFile(mWallpaperCropFile,mWallpaperCropFile);
-                saveFile(bmp,mWallpaperCropFile.getAbsolutePath());
-                Slog.d(TAG, "generating from default wallpaper and save it.");
+                if (!"true".equals(SystemProperties.get("cts_gts.status", "false"))){
+
+                    //When system first bootup,lock wallpaper share with system,let's save it.
+                    File mWallpaperDir = getWallpaperDir(wallpaper.userId);
+                    File mWallpaperFile = new File(mWallpaperDir, WALLPAPER);
+                    File mWallpaperCropFile = new File(mWallpaperDir, WALLPAPER_CROP);
+                    Bitmap bmp=getDefaultWallpaper(mContext);
+                    saveFile(bmp,mWallpaperFile.getAbsolutePath());
+                    //FileUtils.copyFile(mWallpaperCropFile,mWallpaperCropFile);
+                    saveFile(bmp,mWallpaperCropFile.getAbsolutePath());
+                    Slog.d(TAG, "generating from default wallpaper and save it.");
+                }
+
                 if (wallpaper.sourceExists()) {
                     generateCrop(wallpaper);
                 } else {

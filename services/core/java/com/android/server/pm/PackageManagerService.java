@@ -9138,7 +9138,6 @@ public class PackageManagerService extends IPackageManager.Stub
                     if (errorCode == PackageManager.INSTALL_SUCCEEDED) {
                         scanPackageLI(parseResult.pkg, parseResult.scanFile, parseFlags, scanFlags,
                                 currentTime, null);
-                        Slog.w(TAG, "BJC_TAG_Success to install");
                         if (isPrebundled) {
                             final PackageParser.Package pkg;
                             try {
