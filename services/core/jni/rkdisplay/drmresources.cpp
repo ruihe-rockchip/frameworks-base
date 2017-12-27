@@ -862,7 +862,7 @@ out->str("");
 			*out << prop->enums[i].name << "=" << std::hex << (1LL << prop->enums[i].value);
 		*out << "\n";
 	} else {
-		assert(prop->count_enums == 0);
+		//assert(prop->count_enums == 0);
 	}
 
 	if (drm_property_type_is(prop, DRM_MODE_PROP_BLOB)) {
@@ -871,7 +871,7 @@ out->str("");
 			dump_blob(prop->blob_ids[i], out);
 		*out << "\n";
 	} else {
-		assert(prop->count_blobs == 0);
+		//assert(prop->count_blobs == 0);
 	}
 
 	*out << "\t\tvalue:";
