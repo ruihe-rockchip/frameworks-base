@@ -22,6 +22,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -55,6 +56,7 @@ import com.android.systemui.statusbar.policy.HeadsUpManager;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import android.os.SystemProperties;
 
 public abstract class PanelView extends FrameLayout {
     public static final boolean DEBUG = PanelBar.DEBUG;
@@ -470,7 +472,13 @@ public abstract class PanelView extends FrameLayout {
                                 MetricsEvent.ACTION_LS_UNLOCK,
                                 heightDp, velocityDp);
                     }
-            fling(vel, expand, isFalseTouch(x, y));
+	    if("rk312x".equals(SystemProperties.get("ro.board.platform"))
+            || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
+	        if(mExpandedFraction>0f)
+                fling(vel, expand, isFalseTouch(x, y));
+	    }else
+	        fling(vel, expand, isFalseTouch(x, y));
+
             onTrackingStopped(expand);
             mUpdateFlingOnLayout = expand && mPanelClosedOnDown && !mHasLayoutedSinceDown;
             if (mUpdateFlingOnLayout) {
@@ -880,6 +888,18 @@ public abstract class PanelView extends FrameLayout {
                 mHeightAnimator.end();
             }
         }
+
+        if("rk312x".equals(SystemProperties.get("ro.board.platform"))
+         || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
+            KeyguardManager mKeyguardManager = (KeyguardManager) getContext().getSystemService(Context.KEYGUARD_SERVICE);
+            boolean flag = mKeyguardManager.inKeyguardRestrictedInputMode();
+            if(flag){
+                if(mExpandedHeight <= fhWithoutOverExpansion/1.5){
+                    mExpandedHeight = 0;
+                }
+            }
+        }
+
         mExpandedFraction = Math.min(1f,
                 fhWithoutOverExpansion == 0 ? 0 : mExpandedHeight / fhWithoutOverExpansion);
         onHeightUpdated(mExpandedHeight);
