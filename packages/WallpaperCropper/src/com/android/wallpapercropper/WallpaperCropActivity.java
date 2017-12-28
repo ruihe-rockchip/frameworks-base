@@ -53,6 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.SecurityException;
 
 public class WallpaperCropActivity extends Activity {
     private static final String LOGTAG = "Launcher3.CropActivity";
@@ -544,7 +545,9 @@ public class WallpaperCropActivity extends Activity {
                     }
                 } catch (FileNotFoundException e) {
                     Log.w(LOGTAG, "cannot read file: " + mInUri.toString(), e);
-                }
+                } catch (SecurityException e){
+					Log.d(LOGTAG,"****catch SecurityException*****");
+				}
             }
             return null;
         }
