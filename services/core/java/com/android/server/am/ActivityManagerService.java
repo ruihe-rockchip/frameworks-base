@@ -3817,14 +3817,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
         }
 
-        if (("com.google.android.setupwizard".equals(processName) || "com.android.cts.verifier".equals(processName))
-                && (("true".equals(SystemProperties.get("ro.config.low_ram", "false"))) || ("true".equals(SystemProperties.get("ro.mem_optimise.enable", "false"))))) {
-            if (!"true".equals(SystemProperties.get("cts_gts.status", "false"))) {
-                Log.d("xzj", "--start com.google.android.setupwizard---");
-                Log.d("xzj", "--start " + processName);
-                SystemProperties.set("cts_gts.status", "true");
-            }
-        }
         // We don't have to do anything more if:
         // (1) There is an existing application record; and
         // (2) The caller doesn't think it is dead, OR there is no thread
