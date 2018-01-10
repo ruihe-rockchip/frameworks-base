@@ -90,6 +90,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Vector;
 
+import android.os.SystemProperties;
+import android.media.iso.ISOManager;
 
 /**
  * MediaPlayer class can be used to control playback
@@ -694,7 +696,17 @@ public class MediaPlayer extends PlayerBase
     private static final int INVOKE_ID_DESELECT_TRACK = 5;
     private static final int INVOKE_ID_SET_VIDEO_SCALE_MODE = 6;
     private static final int INVOKE_ID_GET_SELECTED_TRACK = 7;
-
+    // add by hh@rock-chips for box
+    private static final int INVOKE_ID_SET_VIDEO_MODE = 8;
+    private static final int INVOKE_ID_GET_VIDEO_STREAM_NUMBER = 9;
+    private static final int INVOKE_ID_GET_HDMI_MODE = 11;
+   
+    // for compatible  with old app version
+    private static final int MEDIAPLAYER_GET_SUBTITLE_VISIBLE = 968;
+    private static final int MEDIAPLAYER_SET_SUBTITLE_VISIBLE = 969;
+    private static final int MEDIAPLAYER_SET_VIDEO_SURFACEVIEW_ZORDER = 970;
+    private static final int MEDIAPLAYER_SET_MAX_QUEUE_SIZE = 971;
+    private static final int MEDIAPLAYER_GET_WHETHER_DOBLY = 972;
     /**
      * Create a request parcel which can be routed to the native media
      * player using {@link #invoke(Parcel, Parcel)}. The Parcel
@@ -1175,6 +1187,14 @@ public class MediaPlayer extends PlayerBase
                 keys,
                 values);
             return;
+        }else{
+            if("box".equals(SystemProperties.get("ro.target.product",  "unknown"))){
+                boolean isBD = ISOManager.isBDDirectory(path);
+                if(isBD){
+                    nativeSetDataSource(null,path,keys,values);
+		    return;
+                }
+            }
         }
 
         final File file = new File(path);
@@ -3064,6 +3084,82 @@ public class MediaPlayer extends PlayerBase
             }
         }
         mSubtitleController.selectTrack(track);
+    }
+
+    public void setSubtitleVisible(int visible){
+        Parcel request = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            request.writeInterfaceToken(IMEDIA_PLAYER);
+            request.writeInt(MEDIAPLAYER_SET_SUBTITLE_VISIBLE);
+            request.writeInt(visible);
+            invoke(request, reply);
+        } finally {
+            request.recycle();
+            reply.recycle();
+        }
+    }
+
+    public void setSubtitleVisible(boolean visible){
+        int value = visible?1:0;
+        setSubtitleVisible(value);
+    }
+
+    public int getVideoStreamNum()
+    {
+        Parcel request = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            request.writeInterfaceToken(IMEDIA_PLAYER);
+            request.writeInt(INVOKE_ID_GET_VIDEO_STREAM_NUMBER);
+            invoke(request, reply);
+	      int number = reply.readInt();
+	      return number;
+        } finally {
+            request.recycle();
+            reply.recycle();
+        }
+    }
+
+    public static final int MODE_2D = 0;
+    public static final int MODE_MVC_3D = 1;
+    public static final int MODE_SIDE_BY_SIDE_TO_3D = 2;
+    public static final int MODE_TOP_BOTTOM_TO_3D = 3;
+    public static final int MODE_SIDE_BY_SIDE_TO_2D = 4;
+    public static final int MODE_TOP_BOTTOM_TO_2D = 5;
+    public int set3DMode(int mode)
+    {
+        Parcel request = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            request.writeInterfaceToken(IMEDIA_PLAYER);
+            request.writeInt(INVOKE_ID_SET_VIDEO_MODE);
+            request.writeInt(mode);
+            invoke(request, reply);
+	      int result = reply.readInt();
+            return result;
+        } finally {
+            request.recycle();
+            reply.recycle();
+        }
+    }
+
+    public int get3DMode()
+    {
+        Parcel request = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        int result = MODE_2D;
+        try {
+            request.writeInterfaceToken(IMEDIA_PLAYER);
+            request.writeInt(INVOKE_ID_GET_HDMI_MODE);
+            invoke(request, reply);
+            result = reply.readInt();
+        } finally {
+            request.recycle();
+            reply.recycle();
+        }
+        
+        return result;
     }
 
     private void selectOrDeselectInbandTrack(int index, boolean select)
