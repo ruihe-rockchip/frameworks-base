@@ -37,6 +37,36 @@ public class EthernetManager {
     private static final String TAG = "EthernetManager";
     private static final int MSG_AVAILABILITY_CHANGED = 1000;
 
+    /**
+     * @hide
+     */
+    public static final String ETHERNET_STATE_CHANGED_ACTION = "android.net.ethernet.ETHERNET_STATE_CHANGED";
+
+    /**
+     * @hide
+     */
+    public static final String EXTRA_ETHERNET_STATE = "ethernet_state";
+
+    /**
+     * @hide
+     */
+    public static final int ETHER_STATE_DISCONNECTED = 0;
+
+    /**
+     * @hide
+     */
+    public static final int ETHER_STATE_CONNECTING = 1;
+
+    /**
+     * @hide
+     */
+    public static final int ETHER_STATE_CONNECTED = 2;
+
+    /**
+     * @hide
+     */
+    public static final int ETHER_STATE_DISCONNECTING = 3;
+    
     private final Context mContext;
     private final IEthernetManager mService;
     private final Handler mHandler = new Handler() {
@@ -112,6 +142,86 @@ public class EthernetManager {
     public boolean isAvailable() {
         try {
             return mService.isAvailable();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+    
+    public int getEthernetCarrierState(String ifname) {
+        try {
+            return mService.getEthernetCarrierState(ifname);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String getEthernetMacAddress(String ifname) {
+        try {
+            return mService.getEthernetMacAddress(ifname);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public int getEthernetConnectState() {
+        try {
+            return mService.getEthernetConnectState();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String getIpAddress() {
+        try {
+            return mService.getIpAddress();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String getNetmask() {
+        try {
+            return mService.getNetmask();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String getGateway() {
+        try {
+            return mService.getGateway();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String getDns() {
+        try {
+            return mService.getDns();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public String dumpCurrentState(int state) {
+        try {
+            return mService.dumpCurrentState(state);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public void reconnect(String iface) {
+        try {
+            mService.reconnect(iface);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    public void disconnect(String iface) {
+        try {
+            mService.disconnect(iface);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

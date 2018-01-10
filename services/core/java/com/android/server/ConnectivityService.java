@@ -195,6 +195,13 @@ public class ConnectivityService extends IConnectivityManager.Stub
     // system property that can override the above value
     private static final String NETWORK_RESTORE_DELAY_PROP_NAME =
             "android.telephony.apn-restore";
+            
+    // if true:
+    //    wifi and ethernet can coexist, if wifi and ethernet connect together, prefered to use ethernet
+    // if false:
+    //    wifi and ethernet can't coexist, if wifi and ethernet connect together, will tear down wifi
+    //    TODO: still have bug in this case to fix (like can't reconnect wifi when ethernet disconnect)
+    private static final boolean ENABLE_NETWORK_COEXIST = true;
 
     // How long to wait before putting up a "This network doesn't have an Internet connection,
     // connect anyway?" dialog after the user selects a network that doesn't validate.
@@ -4799,7 +4806,12 @@ public class ConnectivityService extends IConnectivityManager.Stub
                 break;
             }
         }
-        nai.asyncChannel.disconnect();
+        
+        if (ENABLE_NETWORK_COEXIST) {
+             log("Skip teardownUnneededNetwork: " + nai.name());
+        } else {
+             nai.asyncChannel.disconnect();
+        }
     }
 
     private void handleLingerComplete(NetworkAgentInfo oldNetwork) {
