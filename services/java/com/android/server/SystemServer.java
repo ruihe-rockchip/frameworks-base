@@ -175,6 +175,8 @@ public final class SystemServer {
             "com.android.server.lowpan.LowpanService";
     private static final String ETHERNET_SERVICE_CLASS =
             "com.android.server.ethernet.EthernetService";
+    private static final String PPPOE_SERVICE_CLASS =
+            "com.android.server.pppoe.PppoeService";
     private static final String JOB_SCHEDULER_SERVICE_CLASS =
             "com.android.server.job.JobSchedulerService";
     private static final String LOCK_SETTINGS_SERVICE_CLASS =
@@ -1110,6 +1112,10 @@ public final class SystemServer {
                     mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
                     traceBeginAndSlog("StartEthernet");
                     mSystemServiceManager.startService(ETHERNET_SERVICE_CLASS);
+					if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_PPPOE)) {
+                        traceBeginAndSlog("StartPppoeService");
+                        mSystemServiceManager.startService(PPPOE_SERVICE_CLASS);
+                    }
                     traceEnd();
                 }
 

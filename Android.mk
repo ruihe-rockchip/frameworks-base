@@ -227,6 +227,7 @@ LOCAL_SRC_FILES += \
 	core/java/android/net/IConnectivityManager.aidl \
 	core/java/android/net/IIpConnectivityMetrics.aidl \
 	core/java/android/net/IEthernetManager.aidl \
+	core/java/android/net/IPppoeManager.aidl \
 	core/java/android/net/IEthernetServiceListener.aidl \
 	core/java/android/net/INetdEventCallback.aidl \
 	core/java/android/net/IIpSecService.aidl \

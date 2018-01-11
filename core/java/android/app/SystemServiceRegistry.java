@@ -74,6 +74,8 @@ import android.media.tv.TvInputManager;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityThread;
 import android.net.EthernetManager;
+import android.net.PppoeManager;
+import android.net.IPppoeManager;
 import android.net.IConnectivityManager;
 import android.net.IEthernetManager;
 import android.net.IIpSecService;
@@ -610,6 +612,15 @@ final class SystemServiceRegistry {
                 IBinder b = ServiceManager.getServiceOrThrow(Context.ETHERNET_SERVICE);
                 IEthernetManager service = IEthernetManager.Stub.asInterface(b);
                 return new EthernetManager(ctx.getOuterContext(), service);
+            }});
+			
+		registerService(Context.PPPOE_SERVICE, PppoeManager.class,
+                new CachedServiceFetcher<PppoeManager>() {
+            @Override
+            public PppoeManager createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(Context.PPPOE_SERVICE);
+                IPppoeManager service = IPppoeManager.Stub.asInterface(b);
+                return new PppoeManager(ctx.getOuterContext(), service);
             }});
 
         registerService(Context.WINDOW_SERVICE, WindowManager.class,
