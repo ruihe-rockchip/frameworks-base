@@ -6971,6 +6971,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mWindowManagerDrawComplete = true;
         }
 
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                updateOrientationListenerLp();
+            }
+        }, 100);
+
         finishScreenTurningOn();
     }
 
@@ -6978,7 +6984,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         synchronized (mLock) {
             // We have just finished drawing screen content. Since the orientation listener
             // gets only installed when all windows are drawn, we try to install it again.
-            updateOrientationListenerLp();
+            //updateOrientationListenerLp();
         }
         final ScreenOnListener listener;
         final boolean enableScreen;
