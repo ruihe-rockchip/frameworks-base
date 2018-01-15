@@ -60,6 +60,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import android.os.SystemProperties;
 
 /**
  *  Source of truth for all state / events related to the volume dialog.  No presentation.
@@ -340,11 +341,20 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
 
     private boolean shouldShowUI(int flags) {
         updateStatusBar();
-        return mStatusBar != null
-                && mStatusBar.getWakefulnessState() != WakefulnessLifecycle.WAKEFULNESS_ASLEEP
-                && mStatusBar.getWakefulnessState() != WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP
-                && mStatusBar.isDeviceInteractive()
-                && (flags & AudioManager.FLAG_SHOW_UI) != 0;
+        /*
+         * add by hh@rock-chip.com
+         * there is no mStatusBar in box,but we need to show ui when adjust volume,
+         * so we return true if flags = AudioManager.FLAG_SHOW_UI
+        */
+        if(SystemProperties.get("ro.target.product","box").equals("box")){
+            return ((flags & AudioManager.FLAG_SHOW_UI) != 0);
+        } else {
+            return mStatusBar != null
+                    && mStatusBar.getWakefulnessState() != WakefulnessLifecycle.WAKEFULNESS_ASLEEP
+                    && mStatusBar.getWakefulnessState() != WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP
+                    && mStatusBar.isDeviceInteractive()
+                    && (flags & AudioManager.FLAG_SHOW_UI) != 0;
+        }
     }
 
     boolean onVolumeChangedW(int stream, int flags) {
