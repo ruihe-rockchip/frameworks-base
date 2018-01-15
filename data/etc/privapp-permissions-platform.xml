@@ -392,4 +392,12 @@ applications that come with the platform
     <privapp-permissions package="com.google.android.tv">
         <permission name="android.permission.HDMI_CEC"/>
     </privapp-permissions>
+
+    <privapp-permissions package="com.DeviceTest">
+        <permission name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
+        <permission name="android.permission.BATTERY_STATS" />
+        <permission name="android.permission.MODIFY_PHONE_STATE"/>
+        <permission name="android.permission.WRITE_MEDIA_STORAGE"/>
+        <permission name="android.permission.WRITE_SECURE_SETTINGS"/>
+    </privapp-permissions>
 </permissions>
