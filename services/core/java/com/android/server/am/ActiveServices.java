@@ -331,21 +331,15 @@ public final class ActiveServices {
                 + " type=" + resolvedType + " args=" + service.getExtras());
 
         final boolean callerFg;
-        boolean callFromSystem = false;
         if (caller != null) {
             final ProcessRecord callerApp = mAm.getRecordForAppLocked(caller);
-            if(DEBUG_LOWMEM)Slog.v("xzj", "startService: " + service + " callerApp ="+callerApp
-                                          + " type=" + resolvedType + " args=" + service.getExtras());
-
             if (callerApp == null) {
                 throw new SecurityException(
                         "Unable to find app for caller " + caller
                         + " (pid=" + callingPid
                         + ") when starting service " + service);
             }
-            if(callerApp.uid == 1000)
-                callFromSystem = true;
-                callerFg = callerApp.setSchedGroup != ProcessList.SCHED_GROUP_BACKGROUND;
+            callerFg = callerApp.setSchedGroup != ProcessList.SCHED_GROUP_BACKGROUND;
         } else {
             callerFg = true;
         }
@@ -415,12 +409,6 @@ public final class ActiveServices {
         r.fgRequired = fgRequired;
         r.pendingStarts.add(new ServiceRecord.StartItem(r, false, r.makeNextStartId(),
                 service, neededGrants, callingUid));
-        if((("true".equals(SystemProperties.get("ro.config.low_ram", "false")))||("true".equals(SystemProperties.get("ro.mem_optimise.enable", "false")))) && (!"true".equals(SystemProperties.get("cts_gts.status", "false")))) {
-            if(callFromSystem)//mark call from system
-                r.appInfo.flags |= ApplicationInfo.FLAG_IS_GAME;
-            else
-                r.appInfo.flags &= ~ApplicationInfo.FLAG_IS_GAME;
-        }
 
         final ServiceMap smap = getServiceMapLocked(r.userId);
         boolean addToStarting = false;
@@ -1305,13 +1293,6 @@ public final class ActiveServices {
             return -1;
         }
         ServiceRecord s = res.record;
-        if((("true".equals(SystemProperties.get("ro.config.low_ram", "false")))
-            ||("true".equals(SystemProperties.get("ro.mem_optimise.enable", "false")))) && (!"true".equals(SystemProperties.get("cts_gts.status", "false")))) {
-            if(isCallerSystem)//mark call from system
-                s.appInfo.flags |= ApplicationInfo.FLAG_IS_GAME;
-            else
-                s.appInfo.flags &= ~ApplicationInfo.FLAG_IS_GAME;
-        }
 
         boolean permissionsReviewRequired = false;
 
