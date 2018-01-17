@@ -33,7 +33,10 @@ public interface MediaScannerClient
      * Called by native code to return mime type extracted from DRM content.
      */
     public void setMimeType(String mimeType);
-    
-    // this function just call when define BOX to scan bd directory
+
+    /**
+     * @scan bluray's bdmv directory as video
+     * @hide
+     */
     public void scanBDDirectory(String Path,long lastModified, long fileSize);
 }
