@@ -4399,6 +4399,13 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
                 mIndexMap.put(device, index);
+                if(SystemProperties.get("ro.target.product","box").equals("box")){
+                    if(mStreamType == AudioSystem.STREAM_MUSIC){
+                       for (int i = 0;i<mIndexMap.size();i++){
+                          mIndexMap.put(mIndexMap.keyAt(i), index);
+                       }
+                    }
+                }
 
                 changed = oldIndex != index;
                 // Apply change to all streams using this one as alias if:
@@ -5614,7 +5621,11 @@ public class AudioService extends IAudioService.Stub
                 }
                 // Television devices without CEC service apply software volume on HDMI output
                 if (isPlatformTelevision() && ((device & AudioSystem.DEVICE_OUT_HDMI) != 0)) {
-                    mFixedVolumeDevices |= AudioSystem.DEVICE_OUT_HDMI;
+                    if(SystemProperties.get("ro.target.product","box").equals("box")){
+                        mFixedVolumeDevices = 0;
+                    } else {
+                        mFixedVolumeDevices |= AudioSystem.DEVICE_OUT_HDMI;
+                    }
                     checkAllFixedVolumeDevices();
                     if (mHdmiManager != null) {
                         synchronized (mHdmiManager) {
