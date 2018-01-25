@@ -1472,7 +1472,8 @@ public final class SystemServer {
             }
 
             // $_rbox_$_modify_$
-            if("box".equals(SystemProperties.get("ro.target.product"))) {
+            if("box".equals(SystemProperties.get("ro.target.product")) ||
+               "atv".equals(SystemProperties.get("ro.target.product"))) {
                 try {
                     ServiceManager.addService(
                         "drm_device_management",
