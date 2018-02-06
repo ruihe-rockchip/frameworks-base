@@ -1112,10 +1112,12 @@ public final class SystemServer {
                     mPackageManager.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
                     traceBeginAndSlog("StartEthernet");
                     mSystemServiceManager.startService(ETHERNET_SERVICE_CLASS);
-					if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_PPPOE)) {
-                        traceBeginAndSlog("StartPppoeService");
-                        mSystemServiceManager.startService(PPPOE_SERVICE_CLASS);
-                    }
+                    traceEnd();
+                }
+
+                if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_PPPOE)) {
+                    traceBeginAndSlog("StartPppoeService");
+                    mSystemServiceManager.startService(PPPOE_SERVICE_CLASS);
                     traceEnd();
                 }
 
