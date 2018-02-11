@@ -6921,7 +6921,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mWindowManagerDrawComplete = false;
             mScreenOnListener = screenOnListener;
 
-            if (mKeyguardDelegate != null) {
+            if ((mKeyguardDelegate != null) && !mHasFeatureLeanback) {
                 mHandler.removeMessages(MSG_KEYGUARD_DRAWN_TIMEOUT);
                 mHandler.sendEmptyMessageDelayed(MSG_KEYGUARD_DRAWN_TIMEOUT,
                         getKeyguardDrawnTimeout());
