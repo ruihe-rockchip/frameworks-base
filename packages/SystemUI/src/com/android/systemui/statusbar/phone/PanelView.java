@@ -473,6 +473,7 @@ public abstract class PanelView extends FrameLayout {
                                 heightDp, velocityDp);
                     }
 	    if("rk312x".equals(SystemProperties.get("ro.board.platform"))
+            || "rk3326".equals(SystemProperties.get("ro.board.platform"))
             || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
 	        if(mExpandedFraction>0f)
                 fling(vel, expand, isFalseTouch(x, y));
@@ -890,6 +891,7 @@ public abstract class PanelView extends FrameLayout {
         }
 
         if("rk312x".equals(SystemProperties.get("ro.board.platform"))
+         || "rk3326".equals(SystemProperties.get("ro.board.platform"))
          || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
             KeyguardManager mKeyguardManager = (KeyguardManager) getContext().getSystemService(Context.KEYGUARD_SERVICE);
             boolean flag = mKeyguardManager.inKeyguardRestrictedInputMode();
