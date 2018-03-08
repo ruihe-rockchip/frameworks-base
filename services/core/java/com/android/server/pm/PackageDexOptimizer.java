@@ -245,6 +245,9 @@ public class PackageDexOptimizer {
                 + " sharedLibraries=" + sharedLibrariesPath);
 
 	if(pkg.applicationInfo.packageName.contains("com.android.compatibility.common.deviceinfo")
+		||pkg.applicationInfo.packageName.contains("com.google.android.media.gts")
+		||pkg.applicationInfo.packageName.contains("android.media.cts")
+		||pkg.applicationInfo.packageName.contains("android.mediastress.cts")
 		||pkg.applicationInfo.packageName.contains("android.security.cts")){//maybe  endsWith(".cts") ?
             SystemProperties.set("cts_gts.status","true");
         }
