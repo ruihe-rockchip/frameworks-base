@@ -169,6 +169,7 @@ public class UsbDeviceManager {
     private Intent mBroadcastedIntent;
     private boolean mPendingBootBroadcast;
     private static Set<Integer> sBlackListedInterfaces;
+    private boolean mCharging=false;
 
     static {
         sBlackListedInterfaces = new HashSet<>();
@@ -459,13 +460,15 @@ public class UsbDeviceManager {
                  * Previous versions can set persist config to mtp/ptp but it does not
                  * get reset on OTA. Reset the property here instead.
                  */
-                String persisted = SystemProperties.get(USB_PERSISTENT_CONFIG_PROPERTY);
-                if (UsbManager.containsFunction(persisted, UsbManager.USB_FUNCTION_MTP)
+		if(!"true".equals(SystemProperties.get("ro.usb.default_mtp"))){
+                	String persisted = SystemProperties.get(USB_PERSISTENT_CONFIG_PROPERTY);
+                	if (UsbManager.containsFunction(persisted, UsbManager.USB_FUNCTION_MTP)
                         || UsbManager.containsFunction(persisted, UsbManager.USB_FUNCTION_PTP)) {
-                    SystemProperties.set(USB_PERSISTENT_CONFIG_PROPERTY,
-                            UsbManager.removeFunction(UsbManager.removeFunction(persisted,
-                                    UsbManager.USB_FUNCTION_MTP), UsbManager.USB_FUNCTION_PTP));
-                }
+                   		 SystemProperties.set(USB_PERSISTENT_CONFIG_PROPERTY,
+                            		UsbManager.removeFunction(UsbManager.removeFunction(persisted,
+                                    	UsbManager.USB_FUNCTION_MTP), UsbManager.USB_FUNCTION_PTP));
+                	}
+		}	
 
                 String state = FileUtils.readTextFile(new File(STATE_PATH), 0, null).trim();
                 updateState(state);
@@ -514,6 +517,7 @@ public class UsbDeviceManager {
             } else if ("CONNECTED".equals(state)) {
                 connected = 1;
                 configured = 0;
+                mCharging=false;
             } else if ("CONFIGURED".equals(state)) {
                 connected = 1;
                 configured = 1;
@@ -600,6 +604,10 @@ public class UsbDeviceManager {
             if (DEBUG) {
                 Slog.d(TAG, "setEnabledFunctions functions=" + functions + ", "
                         + "forceRestart=" + forceRestart + ", usbDataUnlocked=" + usbDataUnlocked);
+            }
+
+            if (mCharging&&functions==null){
+                functions=UsbManager.USB_FUNCTION_ADB;
             }
 
             if (usbDataUnlocked != mUsbDataUnlocked) {
@@ -709,7 +717,7 @@ public class UsbDeviceManager {
             if (functions == null) {
                 functions = "";
             }
-            if (mAdbEnabled) {
+            if (mAdbEnabled||mCharging) {
                 functions = UsbManager.addFunction(functions, UsbManager.USB_FUNCTION_ADB);
             } else {
                 functions = UsbManager.removeFunction(functions, UsbManager.USB_FUNCTION_ADB);
@@ -1246,7 +1254,11 @@ public class UsbDeviceManager {
             if (UsbManager.containsFunction(func, UsbManager.USB_FUNCTION_ADB)) {
                 return UsbManager.USB_FUNCTION_ADB;
             } else {
-                return UsbManager.USB_FUNCTION_MTP;
+            	if (UsbManager.USB_FUNCTION_NONE.equals(func)) {
+                	func = UsbManager.USB_FUNCTION_NONE;
+                	mCharging = true;
+            	}
+		return func;
             }
         }
 
@@ -1300,6 +1312,9 @@ public class UsbDeviceManager {
     }
 
     public boolean isFunctionEnabled(String function) {
+        if (function==null){
+            mCharging=true;
+        }
         return UsbManager.containsFunction(SystemProperties.get(USB_CONFIG_PROPERTY), function);
     }
 
@@ -1307,6 +1322,9 @@ public class UsbDeviceManager {
         if (DEBUG) {
             Slog.d(TAG, "setCurrentFunctions(" + functions + ", " +
                     usbDataUnlocked + ")");
+        }
+        if (functions==null){
+            mCharging=true;
         }
         mHandler.sendMessage(MSG_SET_CURRENT_FUNCTIONS, functions, usbDataUnlocked);
     }
