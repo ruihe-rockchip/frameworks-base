@@ -76,6 +76,9 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     @Override
     public void handleSetListening(boolean listening) {
+        if (null == mController) {
+            return;
+        }
         if (listening) {
             mController.addCallback(mCallback);
         } else {
@@ -115,6 +118,9 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
+        if (null == mController) {
+            return;
+        }
         final boolean enabled = mController.isBluetoothEnabled();
         final boolean connected = mController.isBluetoothConnected();
         state.isTransient = mController.isBluetoothConnecting()

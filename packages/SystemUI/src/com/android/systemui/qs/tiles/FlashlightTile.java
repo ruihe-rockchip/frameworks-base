@@ -55,6 +55,9 @@ public class FlashlightTile extends QSTileImpl<BooleanState> implements
 
     @Override
     public void handleSetListening(boolean listening) {
+        if (null == mFlashlightController) {
+            return;
+        }
         if (listening) {
             mFlashlightController.addCallback(this);
         } else {
