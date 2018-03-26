@@ -171,6 +171,9 @@ public class UsbDeviceManager {
     private static Set<Integer> sBlackListedInterfaces;
     private boolean mCharging=false;
 
+    private long mLastUsbEvent = 0;
+    private String mLastUsbAction = "";
+
     static {
         sBlackListedInterfaces = new HashSet<>();
         sBlackListedInterfaces.add(UsbConstants.USB_CLASS_AUDIO);
@@ -207,6 +210,38 @@ public class UsbDeviceManager {
         public void onUEvent(UEventObserver.UEvent event) {
             if (DEBUG) Slog.v(TAG, "USB UEVENT: " + event.toString());
 
+            String subSystem = event.get("SUBSYSTEM");
+            if ("video4linux".equals(subSystem)) {
+                Slog.i(TAG, "USB UEVENT: " + event.toString());
+                Intent intent = new Intent(Intent.ACTION_USB_CAMERA);
+                String action = event.get("ACTION");
+                try {
+                    if (mLastUsbAction != null && mLastUsbAction.equals(action)
+                            && SystemClock.uptimeMillis() - mLastUsbEvent < 1200) {
+                        Slog.i(TAG, "USB UEVENT send double, ignore this!");
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mLastUsbAction = action;
+                mLastUsbEvent = SystemClock.uptimeMillis();
+                if ("remove".equals(action)){
+                    Slog.d(TAG,"usb camera removed");
+                    intent.setFlags(Intent.FLAG_USB_CAMERA_REMOVE);
+                    SystemProperties.set("persist.sys.usbcamera.status","remove");
+                } else if ("add".equals(action)) {
+                    Slog.d(TAG,"usb camera added");
+                    intent.setFlags(Intent.FLAG_USB_CAMERA_ADD);
+                    SystemProperties.set("persist.sys.usbcamera.status","add");
+                }
+
+                int num = android.hardware.Camera.getNumberOfCameras();
+                mContext.sendBroadcast(intent);
+                SystemProperties.set("persist.sys.usbcamera.status","");
+                Slog.d(TAG,"usb camera num="+num);
+            }
+
             String state = event.get("USB_STATE");
             String accessory = event.get("ACCESSORY");
             if (state != null) {
@@ -229,7 +264,6 @@ public class UsbDeviceManager {
         initRndisAddress();
 
         readOemUsbOverrideConfig();
-
         mHandler = new UsbHandler(FgThread.get().getLooper());
 
         if (nativeIsStartRequested()) {
@@ -481,6 +515,19 @@ public class UsbDeviceManager {
                 // Watch for USB configuration changes
                 mUEventObserver.startObserving(USB_STATE_MATCH);
                 mUEventObserver.startObserving(ACCESSORY_START_MATCH);
+
+                String platform = SystemProperties.get("ro.board.platform");
+                if (platform.equals("rk3328")) {
+                    Slog.d(TAG,"platform rk3328 usb");
+                    mUEventObserver.startObserving("DEVPATH=/devices/platform/usb@ff600000");
+                    mUEventObserver.startObserving("DEVPATH=/devices/platform/ff5d0000.usb");
+                } else if (platform.equals("rk322x")) {
+                    Slog.d(TAG,"platform rk322x usb");
+                    mUEventObserver.startObserving("DEVPATH=/devices/platform/30100000.usb");
+                    mUEventObserver.startObserving("DEVPATH=/devices/platform/30080000.usb");
+                    mUEventObserver.startObserving("DEVPATH=/devices/platform/300c0000.usb");
+                }
+
             } catch (Exception e) {
                 Slog.e(TAG, "Error initializing UsbHandler", e);
             }

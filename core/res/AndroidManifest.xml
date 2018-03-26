@@ -227,6 +227,7 @@
     <protected-broadcast android:name="com.android.bluetooth.pbap.authcancelled" />
     <protected-broadcast android:name="com.android.bluetooth.sap.USER_CONFIRM_TIMEOUT" />
     <protected-broadcast android:name="com.android.bluetooth.sap.action.DISCONNECT_ACTION" />
+    <protected-broadcast android:name="android.intent.action.USB_CAMERA" />
 
     <protected-broadcast android:name="android.hardware.display.action.WIFI_DISPLAY_STATUS_CHANGED" />
 

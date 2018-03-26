@@ -4970,6 +4970,19 @@ public class Intent implements Parcelable, Cloneable {
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION)) != 0;
     }
 
+    /**
+     *for Action_USB_CAMRA,remove and add action
+     */
+    /**{@hide}*/
+    public static final int FLAG_USB_CAMERA_REMOVE = 0x00008001;
+
+    /**{@hide}*/
+    public static final int FLAG_USB_CAMERA_ADD = 0x00008002;
+
+    //add this action intent for usb camera remove /add
+    /** {@hide} */
+    public static final String ACTION_USB_CAMERA = "android.intent.action.USB_CAMERA";
+
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
             FLAG_GRANT_READ_URI_PERMISSION,
