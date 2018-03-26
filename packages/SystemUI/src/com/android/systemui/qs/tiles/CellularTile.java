@@ -93,6 +93,9 @@ public class CellularTile extends QSTileImpl<SignalState> {
 
     @Override
     public void handleSetListening(boolean listening) {
+        if (null == mController) {
+            return;
+        }
         if (listening) {
             mController.addCallback(mSignalCallback);
         } else {

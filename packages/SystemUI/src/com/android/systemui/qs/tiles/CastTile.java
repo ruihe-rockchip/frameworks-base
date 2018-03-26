@@ -157,10 +157,16 @@ public class CastTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
+        if (null == mController) {
+            return;
+        }
         state.label = mContext.getString(R.string.quick_settings_cast_title);
         state.contentDescription = state.label;
         state.value = false;
         final Set<CastDevice> devices = mController.getCastDevices();
+        if (null == devices) {
+            return;
+        }
         boolean connecting = false;
         for (CastDevice device : devices) {
             if (device.state == CastDevice.STATE_CONNECTED) {
