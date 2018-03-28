@@ -41,6 +41,7 @@ namespace android{
 #define DEFAULT_SATURATION  50
 #define DEFAULT_HUE  50
 #define DEFAULT_OVERSCAN_VALUE 100
+#define RK_DISPLAY "rkdisplay"
 
 static struct {
     jclass clazz;
@@ -144,6 +145,8 @@ static void hotPlugUpdate(){
     DrmConnector *mextend = NULL;
     DrmConnector *mprimary = NULL;
 
+    if (drm_ == NULL)
+        return;
     for (auto &conn : drm_->connectors()) {
         drmModeConnection old_state = conn->state();
 
@@ -215,7 +218,7 @@ static void hotPlugUpdate(){
     updateConnectors();
 }
 
-static void nativeInit(JNIEnv* env, jobject obj) {
+static void DrmInit() {
     if (drm_ == NULL) {
         drm_ = new DrmResources();
         drm_->Init();
@@ -235,6 +238,41 @@ static void nativeInit(JNIEnv* env, jobject obj) {
         }
         ALOGD("primary: %p extend: %p", primary, extend);
     }
+}
+
+static void *thread_loop(void *param)
+{
+    char property[PROPERTY_VALUE_MAX];
+    while (true) {
+        //property_get("service.bootanim.exit", property, NULL);
+        property_get("sys.boot_completed", property, NULL);
+        if (atoi(property) > 0) {
+            usleep(800*1000);
+            DrmInit();
+            break;
+        }
+        usleep(200*1000);
+    }
+    ALOGD("thread_loop  finish **********");
+    return NULL;
+}
+
+static void init_rkdisplay_thread()
+{
+    int ret;
+    pthread_t rk_thread;
+    ALOGI("Initializing rkdisplay Thread");
+    ret = pthread_create(&rk_thread, NULL, thread_loop, NULL);
+    if (ret) {
+        DrmInit();
+        ALOGE("%s: failed to create %s: %s", __FUNCTION__,
+                RK_DISPLAY, strerror(ret));
+    }
+}
+
+static void nativeInit(JNIEnv* env, jobject obj) {
+    //DrmInit();
+    init_rkdisplay_thread();
 }
 
 #define BUFFER_LENGTH    256
