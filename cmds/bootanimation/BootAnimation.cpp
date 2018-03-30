@@ -100,10 +100,10 @@ static const int TEXT_MISSING_VALUE = INT_MIN;
 static const char EXIT_PROP_NAME[] = "service.bootanim.exit";
 static const int ANIM_ENTRY_NAME_MAX = 256;
 static constexpr size_t TEXT_POS_LEN_MAX = 16;
-
+static const char LOOP_COMPLETED_PROP_NAME[] = "sys.anim_loop.completed";
 // ---------------------------------------------------------------------------
 
-BootAnimation::BootAnimation(sp<Callbacks> callbacks)
+BootAnimation::BootAnimation(sp<Callbacks> callbacks,bool shutdown)
         : Thread(false), mClockEnabled(true), mTimeIsAccurate(false),
         mTimeFormat12Hour(false), mTimeCheckThread(NULL), mCallbacks(callbacks) {
     mSession = new SurfaceComposerClient();
@@ -113,6 +113,21 @@ BootAnimation::BootAnimation(sp<Callbacks> callbacks)
         mShuttingDown = false;
     } else {
         mShuttingDown = true;
+    }
+    mShutdown = shutdown;
+    mReverseAxis = false;
+    if(mShutdown){
+        sp<IBinder> dtoken(SurfaceComposerClient::getBuiltInDisplay(
+                                        ISurfaceComposer::eDisplayIdMain)); // primary_display_token
+        DisplayInfo dinfo;
+        status_t status = SurfaceComposerClient::getDisplayInfo(dtoken, &dinfo);
+        if (status == OK) {
+            ALOGD("DISPLAY,W-H: %d-%d, ori: %d", dinfo.w, dinfo.h, dinfo.orientation);
+            if(dinfo.orientation==1 || dinfo.orientation==3 )
+                mReverseAxis=true;
+            else
+                mReverseAxis=false;
+        }
     }
 }
 
@@ -264,8 +279,14 @@ status_t BootAnimation::readyToRun() {
         return -1;
 
     // create the native surface
+    int curWidth = dinfo.w;
+    int curHeight = dinfo.h;
+    if(mShutdown && mReverseAxis){
+        curWidth = dinfo.h;
+        curHeight = dinfo.w;
+    }
     sp<SurfaceControl> control = session()->createSurface(String8("BootAnimation"),
-            dinfo.w, dinfo.h, PIXEL_FORMAT_RGB_565);
+            /*dinfo.w*/curWidth, /*dinfo.h*/curHeight, PIXEL_FORMAT_RGB_565);
 
     SurfaceComposerClient::openGlobalTransaction();
     control->setLayer(0x40000000);
@@ -324,7 +345,7 @@ status_t BootAnimation::readyToRun() {
     static const char* shutdownFiles[] =
         {OEM_SHUTDOWNANIMATION_FILE, SYSTEM_SHUTDOWNANIMATION_FILE};
 
-    for (const char* f : (!mShuttingDown ? bootFiles : shutdownFiles)) {
+    for (const char* f : (/*!mShuttingDown*/!mShutdown ? bootFiles : shutdownFiles)) {
         if (access(f, R_OK) == 0) {
             mZipFileName = f;
             return NO_ERROR;
@@ -910,7 +931,6 @@ bool BootAnimation::playAnimation(const Animation& animation)
     nsecs_t frameDuration = s2ns(1) / animation.fps;
     const int animationX = (mWidth - animation.width) / 2;
     const int animationY = (mHeight - animation.height) / 2;
-
     ALOGD("%sAnimationShownTiming start time: %" PRId64 "ms", mShuttingDown ? "Shutdown" : "Boot",
             elapsedRealtime());
     for (size_t i=0 ; i<pcount ; i++) {
@@ -1006,6 +1026,11 @@ bool BootAnimation::playAnimation(const Animation& animation)
                 break;
         }
 
+    }
+
+    if(mShutdown){
+        property_set(LOOP_COMPLETED_PROP_NAME, "true");
+        while(1);
     }
 
     // Free textures created for looping parts now that the animation is done.
