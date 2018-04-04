@@ -2449,6 +2449,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub {
             wallpaper.allowBackup = true;
             mWallpaperMap.put(userId, wallpaper);
             if (!wallpaper.cropExists()) {
+                if (wallpaper.sourceExists()) {
+                    generateCrop(wallpaper);
+                } else {
+                    Slog.i(TAG, "No static wallpaper imagery; defaults will be shown");
+                }
                 if (!"true".equals(SystemProperties.get("cts_gts.status", "false"))){
 
                     //When system first bootup,lock wallpaper share with system,let's save it.
@@ -2460,12 +2465,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub {
                     //FileUtils.copyFile(mWallpaperCropFile,mWallpaperCropFile);
                     saveFile(bmp,mWallpaperCropFile.getAbsolutePath());
                     Slog.d(TAG, "generating from default wallpaper and save it.");
-                }
-
-                if (wallpaper.sourceExists()) {
-                    generateCrop(wallpaper);
-                } else {
-                    Slog.i(TAG, "No static wallpaper imagery; defaults will be shown");
                 }
             }
         }
