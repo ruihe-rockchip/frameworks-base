@@ -260,6 +260,16 @@ int SoundPool::play(int sampleID, float leftVolume, float rightVolume,
     if (mQuit) {
         return 0;
     }
+
+    {
+       //  forbid for temp
+       char value[PROPERTY_VALUE_MAX] = "";
+       property_get("media.cfg.audio.bypass", value, "-1");
+       if(memcmp(value, "true", 4) == 0){
+            ALOGD("do not play soundeffect...");
+            return 0;
+       }
+    }
     // is sample ready?
     sp<Sample> sample(findSample_l(sampleID));
     if ((sample == 0) || (sample->state() != Sample::READY)) {
