@@ -191,6 +191,10 @@
     <system-user-whitelisted-app package="com.cghs.stresstest" />
     <system-user-whitelisted-app package="android.rockchip.update.service" />
 
+    <!-- Some customer may use these aosp app, adapt to api 26 -->
+    <system-user-whitelisted-app package="com.android.gallery3d" />
+    <system-user-whitelisted-app package="com.android.music" />
+
     <!-- These are the packages that shouldn't run as system user -->
     <system-user-blacklisted-app package="com.android.wallpaper.livepicker" />
 </permissions>
