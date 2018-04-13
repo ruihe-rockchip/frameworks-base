@@ -411,9 +411,14 @@ applications that come with the platform
 
     <privapp-permissions package="com.android.vending">
         <permission name="android.permission.BACKUP" />
+        <permission name="android.permission.UPDATE_DEVICE_STATS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.google.android.apps.nbu.files">
-        <permissions name="android.permission.DELETE_CACHE_FILES" />
+        <permission name="android.permission.DELETE_CACHE_FILES" />
+    </privapp-permissions>
+
+    <privapp-permissions package="com.google.android.backuptransport">
+        <permission name="android.permission.UPDATE_DEVICE_STATS" />
     </privapp-permissions>
 </permissions>
