@@ -1316,7 +1316,8 @@ public class NotificationManagerService extends SystemService {
                 R.integer.config_notificationServiceArchiveSize));
 
         mIsTelevision = mPackageManagerClient.hasSystemFeature(FEATURE_LEANBACK)
-                || mPackageManagerClient.hasSystemFeature(FEATURE_TELEVISION);
+                || mPackageManagerClient.hasSystemFeature(FEATURE_TELEVISION)
+                || "box".equals(SystemProperties.get("ro.target.product",  "unknown"));
     }
 
     @Override

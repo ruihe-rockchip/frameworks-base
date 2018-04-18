@@ -38,6 +38,7 @@ import android.os.ShellCommand;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
+import android.os.SystemProperties;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -280,7 +281,8 @@ public class DeviceStorageMonitorService extends SystemService {
 
         // Ensure that the notification channel is set up
         PackageManager packageManager = context.getPackageManager();
-        boolean isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+        boolean isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                       ||"box".equals(SystemProperties.get("ro.target.product",  "unknown"));
 
         if (isTv) {
             mNotifManager.createNotificationChannel(new NotificationChannel(
