@@ -444,7 +444,8 @@ public class UsbDeviceManager {
     }
 
     private boolean isTv() {
-        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+        return mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+               || "box".equals(SystemProperties.get("ro.target.product",  "unknown"));
     }
 
     private final class UsbHandler extends Handler {

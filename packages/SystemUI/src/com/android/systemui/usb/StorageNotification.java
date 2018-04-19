@@ -46,7 +46,7 @@ import com.android.internal.R;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.systemui.SystemUI;
 import com.android.systemui.util.NotificationChannels;
-
+import android.os.SystemProperties;
 import java.util.List;
 
 public class StorageNotification extends SystemUI {
@@ -746,6 +746,7 @@ public class StorageNotification extends SystemUI {
 
     private boolean isTv() {
         PackageManager packageManager = mContext.getPackageManager();
-        return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+        return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+               ||"box".equals(SystemProperties.get("ro.target.product",  "unknown"));
     }
 }
