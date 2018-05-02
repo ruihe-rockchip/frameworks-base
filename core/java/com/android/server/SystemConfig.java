@@ -25,6 +25,7 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.Process;
 import android.os.storage.StorageManager;
+import android.os.SystemProperties;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -591,6 +592,10 @@ public class SystemConfig {
 
         if (ActivityManager.isLowRamDeviceStatic()) {
             addFeature(PackageManager.FEATURE_RAM_LOW, 0);
+	    if("atv".equals(SystemProperties.get("ro.target.product",  "unknown"))){//atv 1+8 open lowmem,should remove pip and second display features
+	    	removeFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+            	removeFeature(PackageManager.FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS);
+	    }
         } else {
             addFeature(PackageManager.FEATURE_RAM_NORMAL, 0);
         }
