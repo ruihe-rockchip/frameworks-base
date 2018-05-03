@@ -326,8 +326,20 @@ class DragState {
     private boolean targetWindowSupportsGlobalDrag(WindowState targetWin) {
         // Global drags are limited to system windows, and windows for apps that are targeting N and
         // above.
-        return targetWin.mAppToken == null
+        boolean result = targetWin.mAppToken == null
                 || targetWin.mAppToken.mTargetSdk >= Build.VERSION_CODES.N;
+        if (!result) {
+            String strWinState = targetWin.toString();
+            if (null == strWinState) {
+                return result;
+            }
+            if (strWinState.endsWith("com.android.launcher3.Launcher}")
+                || strWinState.endsWith("com.android.searchlauncher.SearchLauncher}")) {
+                Slog.d(TAG_WM, "allow launcher3 to global drag");
+                result = true;
+            }
+        }
+        return result;
     }
 
     /* helper - send a ACTION_DRAG_STARTED event only if the window has not
