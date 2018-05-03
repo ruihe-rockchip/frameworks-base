@@ -184,6 +184,7 @@
     <allow-in-power-save package="com.android.cellbroadcastreceiver" />
     <allow-in-power-save package="com.android.shell" />
     <allow-in-power-save package="com.android.deskclock" />
+    <allow-in-power-save package="com.android.gallery3d" />
 
     <!-- These are the packages that are white-listed to be able to run as system user -->
     <system-user-whitelisted-app package="com.android.settings" />
