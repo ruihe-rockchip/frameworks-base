@@ -562,6 +562,9 @@ public class UsbDeviceManager {
             } else if ("CONFIGURED".equals(state)) {
                 connected = 1;
                 configured = 1;
+		if ("true".equals(SystemProperties.get("ro.usb.default_mtp")) && 
+		UsbManager.containsFunction(mCurrentFunctions, UsbManager.USB_FUNCTION_MTP))
+                	mUsbDataUnlocked = true;
             } else {
                 Slog.e(TAG, "unknown state " + state);
                 return;
@@ -644,7 +647,7 @@ public class UsbDeviceManager {
                 boolean usbDataUnlocked) {
             if (DEBUG) {
                 Slog.d(TAG, "setEnabledFunctions functions=" + functions + ", "
-                        + "forceRestart=" + forceRestart + ", usbDataUnlocked=" + usbDataUnlocked);
+                        + "forceRestart=" + forceRestart + ", usbDataUnlocked=" + usbDataUnlocked+" mCharging ="+mCharging);
             }
 
             if (mCharging&&functions==null){
@@ -1290,9 +1293,9 @@ public class UsbDeviceManager {
         private String getDefaultFunctions() {
             String func = SystemProperties.get(getPersistProp(true),
                     UsbManager.USB_FUNCTION_NONE);
-            // if ADB is enabled, reset functions to ADB
+            // if not allow default mtp,if ADB is enabled, reset functions to ADB
             // else enable MTP as usual.
-            if (UsbManager.containsFunction(func, UsbManager.USB_FUNCTION_ADB)) {
+            if (!"true".equals(SystemProperties.get("ro.usb.default_mtp")) && UsbManager.containsFunction(func, UsbManager.USB_FUNCTION_ADB)) {
                 return UsbManager.USB_FUNCTION_ADB;
             } else {
             	if (UsbManager.USB_FUNCTION_NONE.equals(func)) {
