@@ -3500,9 +3500,12 @@ public class NotificationManagerService extends SystemService {
                     + ", notificationUid=" + notificationUid
                     + ", notification=" + notification;
             Log.e(TAG, noChannelStr);
+           if(!"atv".equals(SystemProperties.get("ro.target.product",  "unknown"))
+              || !"box".equals(SystemProperties.get("ro.target.product",  "unknown")){
             doChannelWarningToast("Developer warning for package \"" + pkg + "\"\n" +
                     "Failed to post notification on channel \"" + channelId + "\"\n" +
                     "See log for more details");
+            }
             return;
         }
 
