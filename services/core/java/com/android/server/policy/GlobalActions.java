@@ -20,6 +20,7 @@ import com.android.server.statusbar.StatusBarManagerInternal.GlobalActionsListen
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.SystemProperties;
 import android.util.Slog;
 import android.view.WindowManagerPolicy.WindowManagerFuncs;
 
@@ -61,7 +62,9 @@ class GlobalActions implements GlobalActionsListener {
         mKeyguardShowing = keyguardShowing;
         mDeviceProvisioned = deviceProvisioned;
         mShowing = true;
-        if (mStatusBarConnected) {
+        boolean isTvProduct = SystemProperties.get("ro.target.product","unknown").equals("atv") ||
+                           SystemProperties.get("ro.target.product","unknown").equals("box");
+        if (mStatusBarConnected && !isTvProduct) {
             mStatusBarInternal.showGlobalActions();
             mHandler.postDelayed(mShowTimeout, 5000);
         } else {
