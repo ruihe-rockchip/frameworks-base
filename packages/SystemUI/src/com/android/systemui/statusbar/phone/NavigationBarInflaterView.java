@@ -108,7 +108,7 @@ public class NavigationBarInflaterView extends FrameLayout
         Display display = ((WindowManager)
                 context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         Mode displayMode = display.getMode();
-        isRot0Landscape = displayMode.getPhysicalWidth() < displayMode.getPhysicalHeight();
+        isRot0Landscape = displayMode.getPhysicalWidth() > displayMode.getPhysicalHeight();
     }
 
     private void createInflaters() {
@@ -131,11 +131,12 @@ public class NavigationBarInflaterView extends FrameLayout
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if(mDensity != newConfig.densityDpi || mDensity < 600){
-            mDensity = newConfig.densityDpi;
-            createInflaters();
-            inflateChildren();
-            clearViews();
-            inflateLayout(mCurrentLayout);
+            if (null != mRot0
+                    && null != mRot0.findViewById(R.id.nav_buttons)) {
+                mDensity = newConfig.densityDpi;
+                clearViews();
+                inflateLayout(mCurrentLayout);
+            }
         }
     }
 
