@@ -4006,9 +4006,6 @@ message MetricsEvent {
     // OS: O
     FIELD_NOTIFICATION_GROUP_SUMMARY = 947;
 
-    // OPEN: Settings > ScreenShot
-    SCREENSHOT = 948;
-
     // An app attempted to forge a different component name in the AssisStructure that would be
     // passed to the autofill service.
     // OS: O (security patch)
