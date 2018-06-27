@@ -270,7 +270,8 @@ public abstract class PanelView extends FrameLayout {
         }
 
         // On expanding, single mouse click expands the panel instead of dragging.
-        if (isFullyCollapsed() && event.isFromSource(InputDevice.SOURCE_MOUSE)) {
+        if (isFullyCollapsed() && event.isFromSource(InputDevice.SOURCE_MOUSE)
+            && !isQuicklyUnlockMachine()) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 expand(true);
             }
@@ -472,9 +473,7 @@ public abstract class PanelView extends FrameLayout {
                                 MetricsEvent.ACTION_LS_UNLOCK,
                                 heightDp, velocityDp);
                     }
-	    if("rk312x".equals(SystemProperties.get("ro.board.platform"))
-            || "rk3326".equals(SystemProperties.get("ro.board.platform"))
-            || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
+        if (isQuicklyUnlockMachine()) {
 	        if(mExpandedFraction>0f)
                 fling(vel, expand, isFalseTouch(x, y));
 	    }else
@@ -890,9 +889,7 @@ public abstract class PanelView extends FrameLayout {
             }
         }
 
-        if("rk312x".equals(SystemProperties.get("ro.board.platform"))
-         || "rk3326".equals(SystemProperties.get("ro.board.platform"))
-         || "rk3126c".equals(SystemProperties.get("ro.board.platform"))){
+        if (isQuicklyUnlockMachine()) {
             KeyguardManager mKeyguardManager = (KeyguardManager) getContext().getSystemService(Context.KEYGUARD_SERVICE);
             boolean flag = mKeyguardManager.inKeyguardRestrictedInputMode();
             if(flag){
@@ -906,6 +903,17 @@ public abstract class PanelView extends FrameLayout {
                 fhWithoutOverExpansion == 0 ? 0 : mExpandedHeight / fhWithoutOverExpansion);
         onHeightUpdated(mExpandedHeight);
         notifyBarPanelExpansionChanged();
+    }
+
+    private boolean isQuicklyUnlockMachine() {
+        String platformName = SystemProperties.get("ro.board.platform");
+        if ("rk312x".equals(platformName)
+            || "rk3126c".equals(platformName)
+            || "rk3326".equals(platformName)
+            || "rk3399".equals(platformName)) {
+            return true;
+        }
+        return false;
     }
 
     /**
