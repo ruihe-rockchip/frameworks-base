@@ -11213,7 +11213,8 @@ public class PackageManagerService extends IPackageManager.Stub
         final String cpuAbiOverride = deriveAbiOverride(pkg.cpuAbiOverride, pkgSetting);
 
         if ((scanFlags & SCAN_NEW_INSTALL) == 0) {
-            if ((scanFlags & SCAN_FIRST_BOOT_OR_UPGRADE) != 0) {
+            if ((scanFlags & SCAN_FIRST_BOOT_OR_UPGRADE) != 0
+                && (policyFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) == 0) {
                 Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "derivePackageAbi");
                 final boolean extractNativeLibs = !pkg.isLibrary();
                 derivePackageAbi(pkg, scanFile, cpuAbiOverride, extractNativeLibs,
@@ -12609,8 +12610,9 @@ public class PackageManagerService extends IPackageManager.Stub
                 // libs for apps from the system paritition.  It isn't really specific to 32bit info
                 // any way except for the variable name, the system will use the primary/secondary
                 // ABI computed below.
-                info.nativeLibraryRootDir = new File(staticAppLib32InstallDir,
-                        pkg.packageName).getAbsolutePath();
+                info.primaryCpuAbi = "armeabi-v7a";
+                info.nativeLibraryRootDir = new File(codeFile, LIB_DIR_NAME).getAbsolutePath();
+                Log.d(TAG, info.primaryCpuAbi + " prebundled install " + info.nativeLibraryRootDir);
             } else {
                 info.nativeLibraryRootDir = new File(codeFile, LIB_DIR_NAME).getAbsolutePath();
             }
