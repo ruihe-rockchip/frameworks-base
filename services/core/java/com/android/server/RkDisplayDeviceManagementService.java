@@ -371,7 +371,10 @@ class RkDisplayDeviceManagementService extends IRkDisplayDeviceManagementService
     }
 
     public int saveConfig() {
-        mdrmModes.saveConfig();
+        //mdrmModes.saveConfig();
+	SystemProperties.set("persist.sys.saveconfig", "1");
+        timeline++;
+        SystemProperties.set("sys.display.timeline", Integer.toString(timeline));
         return 0;
     }
 }
