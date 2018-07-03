@@ -447,7 +447,7 @@ void NativeInputManager::setDisplayViewport(int32_t type, const DisplayViewport&
             v = &mLocked.internalViewport;
         }
 
-        if (v != NULL && *v != convertViewport) {
+        if (v != NULL && *v != viewport) {
             changed = true;
             *v = convertViewport;
 
@@ -455,8 +455,8 @@ void NativeInputManager::setDisplayViewport(int32_t type, const DisplayViewport&
                 sp<PointerController> controller = mLocked.pointerController.promote();
                 if (controller != NULL) {
                     controller->setDisplayViewport(
-                            convertViewport.logicalRight - convertViewport.logicalLeft,
-                            convertViewport.logicalBottom - convertViewport.logicalTop,
+                            viewport.logicalRight - viewport.logicalLeft,
+                            viewport.logicalBottom - viewport.logicalTop,
                             convertViewport.orientation);
                 }
             }
