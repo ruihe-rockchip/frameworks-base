@@ -311,8 +311,6 @@ private:
 
         // Input devices to be disabled
         SortedVector<int32_t> disabledInputDevices;
-
-        int hardwareRotation;
     } mLocked;
 
     std::atomic<bool> mInteractive;
@@ -345,13 +343,6 @@ NativeInputManager::NativeInputManager(jobject contextObj,
         mLocked.pointerGesturesEnabled = true;
         mLocked.showTouches = false;
         mLocked.pointerCapture = false;
-
-        mLocked.hardwareRotation = 0;
-        char property[PROPERTY_VALUE_MAX];
-        if (property_get("ro.sf.hwrotation", property, "0") > 0) {
-            mLocked.hardwareRotation = atoi(property) / 90;
-        }
-
     }
     mInteractive = true;
 
@@ -434,11 +425,6 @@ void NativeInputManager::setDisplayViewport(int32_t type, const DisplayViewport&
     {
         AutoMutex _l(mLock);
 
-        DisplayViewport convertViewport; // viewport with hwrotation.
-        convertViewport.copyFrom(viewport);
-
-        convertViewport.orientation = (mLocked.hardwareRotation + convertViewport.orientation) % 4;
-
         ViewportType viewportType = static_cast<ViewportType>(type);
         DisplayViewport* v = NULL;
         if (viewportType == ViewportType::VIEWPORT_EXTERNAL) {
@@ -449,7 +435,7 @@ void NativeInputManager::setDisplayViewport(int32_t type, const DisplayViewport&
 
         if (v != NULL && *v != viewport) {
             changed = true;
-            *v = convertViewport;
+            *v = viewport;
 
             if (viewportType == ViewportType::VIEWPORT_INTERNAL) {
                 sp<PointerController> controller = mLocked.pointerController.promote();
@@ -457,7 +443,7 @@ void NativeInputManager::setDisplayViewport(int32_t type, const DisplayViewport&
                     controller->setDisplayViewport(
                             viewport.logicalRight - viewport.logicalLeft,
                             viewport.logicalBottom - viewport.logicalTop,
-                            convertViewport.orientation);
+                            viewport.orientation);
                 }
             }
         }
