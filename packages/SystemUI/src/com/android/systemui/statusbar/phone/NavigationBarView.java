@@ -36,7 +36,6 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.ContextThemeWrapper;
 import android.view.Display;
-import android.view.Display.Mode;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -121,8 +120,6 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
     private NavigationBarInflaterView mNavigationInflaterView;
     private RecentsComponent mRecentsComponent;
     private Divider mDivider;
-
-    private boolean mIsRot0Landscape = true;
 
     private class NavTransitionListener implements TransitionListener {
         private boolean mBackTransitioning;
@@ -217,11 +214,6 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
         mConfiguration = new Configuration();
         mConfiguration.updateFrom(context.getResources().getConfiguration());
         updateIcons(context, Configuration.EMPTY, mConfiguration);
-        Display display = ((WindowManager)
-                context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        Mode displayMode = display.getMode();
-        mIsRot0Landscape = displayMode.getPhysicalWidth() > displayMode.getPhysicalHeight();
-        Log.v(TAG, "PW=" + displayMode.getPhysicalWidth() + ", PH=" + displayMode.getPhysicalHeight());
 
         mBarTransitions = new NavigationBarTransitions(this);
 
@@ -601,16 +593,6 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
     }
 
     private void updateRotatedViews() {
-        if (mIsRot0Landscape) {
-            Log.w(TAG, "NBV updateRotatedViews mVertical= true, change rot0 rot90");
-            mRotatedViews[Surface.ROTATION_0] =
-                    mRotatedViews[Surface.ROTATION_180] = findViewById(R.id.rot90);
-            mRotatedViews[Surface.ROTATION_270] =
-                    mRotatedViews[Surface.ROTATION_90] = findViewById(R.id.rot0);
-            updateCurrentView();
-            return;
-        }
-
         mRotatedViews[Surface.ROTATION_0] =
                 mRotatedViews[Surface.ROTATION_180] = findViewById(R.id.rot0);
         mRotatedViews[Surface.ROTATION_270] =
