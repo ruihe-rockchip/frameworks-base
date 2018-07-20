@@ -108,7 +108,7 @@ public class NavigationBarInflaterView extends FrameLayout
         Display display = ((WindowManager)
                 context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         Mode displayMode = display.getMode();
-        isRot0Landscape = displayMode.getPhysicalWidth() < displayMode.getPhysicalHeight();
+        isRot0Landscape = displayMode.getPhysicalWidth() > displayMode.getPhysicalHeight();
     }
 
     private void createInflaters() {
