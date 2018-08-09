@@ -509,7 +509,6 @@ public final class ShutdownThread extends Thread {
             start_shutdownanim();
             thaw_orien_shutdownanim();
         }
-
         Log.i(TAG, "Shutting down activity manager...");
         shutdownTimingLog.traceBegin("ShutdownActivityManager");
         metricStarted(METRIC_AM);
@@ -617,7 +616,7 @@ public final class ShutdownThread extends Thread {
         if (checkAnimationFileExist()) {
             wait_shutdownanim_end();
         }
-
+        mPowerManager.goToSleep(SystemClock.uptimeMillis());
         rebootOrShutdown(mContext, mReboot, mReason);
     }
 
