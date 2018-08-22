@@ -12605,7 +12605,8 @@ public class PackageManagerService extends IPackageManager.Stub
             info.nativeLibraryDir = info.nativeLibraryRootDir;
         } else {
             // Cluster install
-            if ((parseFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) != 0) {
+            if ((parseFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) != 0
+                || (parseFlags & PackageParser.PARSE_IS_PREINSTALL) != 0) {
                 // mAppLib32InstallDir is the directory /data/app-lib which is used to store native
                 // libs for apps from the system paritition.  It isn't really specific to 32bit info
                 // any way except for the variable name, the system will use the primary/secondary
