@@ -1666,6 +1666,11 @@ public class PackageParser {
             // about verifying integrity.
             boolean signatureSchemeRollbackProtectionsEnforced =
                     (parseFlags & PARSE_IS_SYSTEM_DIR) == 0;
+            if (signatureSchemeRollbackProtectionsEnforced
+                && (parseFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) != 0) {
+                signatureSchemeRollbackProtectionsEnforced = false;
+                Slog.w(TAG, "PARSE_IS_PREBUNDLED_DIR " + apkPath + " signatureSchemeRollbackProtectionsEnforced set false");
+            }
             jarFile = new StrictJarFile(
                     apkPath,
                     !verified, // whether to verify JAR signature
