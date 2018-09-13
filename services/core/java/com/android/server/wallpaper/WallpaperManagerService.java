@@ -82,6 +82,7 @@ import android.service.wallpaper.IWallpaperService;
 import android.service.wallpaper.WallpaperService;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.text.TextUtils;
 import android.util.EventLog;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -1831,9 +1832,27 @@ public class WallpaperManagerService extends IWallpaperManager.Stub {
         }
     }
 
+    private InputStream getDefaultWallpaperISFromFile() {
+        String path = SystemProperties.get("ro.config.wallpaper");
+        if (!TextUtils.isEmpty(path)) {
+            final File file = new File(path);
+            if (file.exists()) {
+                try {
+                    return new FileInputStream(file);
+                } catch (IOException e) {
+                    // Ignored, fall back to platform default below
+                }
+            }
+        }
+        return null;
+    }
+
     private Bitmap getDefaultWallpaper(Context context) {
-        int defaultResId = com.android.internal.R.drawable.default_wallpaper;
-        InputStream is = context.getResources().openRawResource(defaultResId);
+        InputStream is = getDefaultWallpaperISFromFile();
+        if (is == null) {
+            int defaultResId = com.android.internal.R.drawable.default_wallpaper;
+            is = context.getResources().openRawResource(defaultResId);
+        }
         if (is != null) {
             try {
                 BitmapFactory.Options options = new BitmapFactory.Options();
