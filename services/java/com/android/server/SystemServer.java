@@ -1475,7 +1475,8 @@ public final class SystemServer {
 
             // $_rbox_$_modify_$
             if("box".equals(SystemProperties.get("ro.target.product")) ||
-               "atv".equals(SystemProperties.get("ro.target.product"))) {
+               "atv".equals(SystemProperties.get("ro.target.product")) ||
+               "true".equals(SystemProperties.get("ro.rk.hdmisetting"))) {
                 try {
                     ServiceManager.addService(
                         "drm_device_management",
