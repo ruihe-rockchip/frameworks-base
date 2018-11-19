@@ -861,12 +861,13 @@ public class ImageWallpaper extends WallpaperService {
         private int[] getConfig() {
             return new int[] {
                     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-                    EGL_RED_SIZE, 8,
-                    EGL_GREEN_SIZE, 8,
-                    EGL_BLUE_SIZE, 8,
+                    EGL_RED_SIZE, 0,
+                    EGL_GREEN_SIZE, 0,
+                    EGL_BLUE_SIZE, 0,
                     EGL_ALPHA_SIZE, 0,
                     EGL_DEPTH_SIZE, 0,
                     EGL_STENCIL_SIZE, 0,
+                    EGL_BUFFER_SIZE, 24,
                     EGL_CONFIG_CAVEAT, EGL_NONE,
                     EGL_NONE
             };
