@@ -96,7 +96,7 @@ static bool builtInHdmi(int type){
 
 static bool isGammaSetEnable(int type) {
     return type == DRM_MODE_CONNECTOR_eDP || type == DRM_MODE_CONNECTOR_LVDS ||
-        type == DRM_MODE_CONNECTOR_DSI;
+        type == DRM_MODE_CONNECTOR_DSI || type == DRM_MODE_CONNECTOR_DPI;
 }
 
 static void updateConnectors(){

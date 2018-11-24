@@ -60,6 +60,7 @@ public class RkDisplayModes {
     public final int DRM_MODE_CONNECTOR_eDP = 14;
     public final int DRM_MODE_CONNECTOR_VIRTUAL = 15;
     public final int DRM_MODE_CONNECTOR_DSI = 16;
+    public final int DRM_MODE_CONNECTOR_DPI = 17;
 
     private final int MAIN_DISPLAY = 0;
     private final int AUX_DISPLAY = 1;
@@ -82,6 +83,7 @@ public class RkDisplayModes {
     private final String DISPLAY_TYPE_EDP = "EDP";
     private final String DISPLAY_TYPE_VIRTUAL = "VIRTUAL";
     private final String DISPLAY_TYPE_DSI = "DSI";
+    private final String DISPLAY_TYPE_DPI = "DPI";
 
     private static final String MODE_TYPE_BUILTIN = "builtin";
     private static final String MODE_TYPE_CLOCKC = "clock_c";
@@ -188,7 +190,7 @@ public class RkDisplayModes {
         return type==DRM_MODE_CONNECTOR_Unknown || type==DRM_MODE_CONNECTOR_Composite ||
                type==DRM_MODE_CONNECTOR_SVIDEO || type==DRM_MODE_CONNECTOR_LVDS ||
                type==DRM_MODE_CONNECTOR_TV || type==DRM_MODE_CONNECTOR_VIRTUAL ||
-               type==DRM_MODE_CONNECTOR_DSI;
+               type==DRM_MODE_CONNECTOR_DSI || type==DRM_MODE_CONNECTOR_DPI;
     }
 
     public  List<String> getModeList(int dpy){
@@ -580,6 +582,8 @@ public class RkDisplayModes {
             ifaceType = DRM_MODE_CONNECTOR_VIRTUAL;
         } else if(iface.equals(DISPLAY_TYPE_DSI)) {
             ifaceType = DRM_MODE_CONNECTOR_DSI;
+	} else if(iface.equals(DISPLAY_TYPE_DPI)) {
+	    ifaceType = DRM_MODE_CONNECTOR_DPI;
         } else {
             ifaceType = 0;
         }
@@ -622,6 +626,8 @@ public class RkDisplayModes {
             iface = DISPLAY_TYPE_VIRTUAL;
         else if(type == DRM_MODE_CONNECTOR_DSI)
             iface = DISPLAY_TYPE_DSI;
+	else if(type == DRM_MODE_CONNECTOR_DPI)
+	    iface = DISPLAY_TYPE_DPI;
         else
             return null;
 

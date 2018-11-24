@@ -55,6 +55,7 @@ public class RkDisplayOutputManager {
     public final int DRM_MODE_CONNECTOR_eDP = 14;
     public final int DRM_MODE_CONNECTOR_VIRTUAL = 15;
     public final int DRM_MODE_CONNECTOR_DSI = 16;
+    public final int DRM_MODE_CONNECTOR_DPI = 17;
 
     private final String DISPLAY_TYPE_UNKNOW = "UNKNOW";
     private final String DISPLAY_TYPE_VGA = "VGA";
@@ -73,6 +74,7 @@ public class RkDisplayOutputManager {
     private final String DISPLAY_TYPE_EDP = "EDP";
     private final String DISPLAY_TYPE_VIRTUAL = "VIRTUAL";
     private final String DISPLAY_TYPE_DSI = "DSI";
+    private final String DISPLAY_TYPE_DPI = "DPI";
     public final String COLOR_FORMAT_RGB = "RGB";
    
     public final String DISPLAY_TYPE_HDMI = "HDMI";
@@ -189,6 +191,8 @@ public class RkDisplayOutputManager {
             ifaceType = DRM_MODE_CONNECTOR_VIRTUAL;
         } else if(iface.equals(DISPLAY_TYPE_DSI)) {
             ifaceType = DRM_MODE_CONNECTOR_DSI;
+	} else if(iface.equals(DISPLAY_TYPE_DPI)) {
+	    ifaceType = DRM_MODE_CONNECTOR_DPI;
         } else {
             ifaceType = 0;
         }
@@ -230,6 +234,8 @@ public class RkDisplayOutputManager {
             iface = DISPLAY_TYPE_VIRTUAL;
         else if(type == DRM_MODE_CONNECTOR_DSI)
             iface = DISPLAY_TYPE_DSI;
+	else if(type == DRM_MODE_CONNECTOR_DPI)
+	    iface = DISPLAY_TYPE_DPI;
         else
             return null;
 
