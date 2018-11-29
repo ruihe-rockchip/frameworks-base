@@ -694,7 +694,7 @@ public class AudioService extends IAudioService.Stub
         if (maxMusicVolume != -1) {
             MAX_STREAM_VOLUME[AudioSystem.STREAM_MUSIC] = maxMusicVolume;
         }
-        if(SystemProperties.get("ro.target.product","box").equals("box")){
+        if(SystemProperties.get("ro.target.product","box").equals("box") ||SystemProperties.get("ro.target.product","box").equals("tablet")){
             mFixedVolumeDevices = 0;
         }
         int defaultMusicVolume = SystemProperties.getInt("ro.config.media_vol_default", -1);
@@ -4399,7 +4399,7 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
                 mIndexMap.put(device, index);
-                if(SystemProperties.get("ro.target.product","box").equals("box")){
+                if(SystemProperties.get("ro.target.product","box").equals("box") || SystemProperties.get("ro.target.product","tablet").equals("box")){
                     if(mStreamType == AudioSystem.STREAM_MUSIC){
                        for (int i = 0;i<mIndexMap.size();i++){
                           mIndexMap.put(mIndexMap.keyAt(i), index);
@@ -5621,7 +5621,7 @@ public class AudioService extends IAudioService.Stub
                 }
                 // Television devices without CEC service apply software volume on HDMI output
                 if (isPlatformTelevision() && ((device & AudioSystem.DEVICE_OUT_HDMI) != 0)) {
-                    if(SystemProperties.get("ro.target.product","box").equals("box")){
+                    if(SystemProperties.get("ro.target.product","box").equals("box") || SystemProperties.get("ro.target.product","box").equals("tablet")){
                         mFixedVolumeDevices = 0;
                     } else {
                         mFixedVolumeDevices |= AudioSystem.DEVICE_OUT_HDMI;
