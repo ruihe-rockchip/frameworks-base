@@ -910,6 +910,7 @@ public abstract class PanelView extends FrameLayout {
         if ("rk312x".equals(platformName)
             || "rk3126c".equals(platformName)
             || "rk3326".equals(platformName)
+            || "rk3399pro".equals(platformName)
             || "rk3399".equals(platformName)) {
             return true;
         }
