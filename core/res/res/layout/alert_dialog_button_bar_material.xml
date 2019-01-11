@@ -22,6 +22,7 @@
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:scrollIndicators="top|bottom"
             android:fillViewport="true"
+            android:scrollbars="none"
             style="?attr/buttonBarStyle">
     <com.android.internal.widget.ButtonBarLayout
         android:layout_width="match_parent"
