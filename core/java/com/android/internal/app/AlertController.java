@@ -507,6 +507,8 @@ public class AlertController {
         final ViewGroup topPanel = resolvePanel(customTopPanel, defaultTopPanel);
         final ViewGroup contentPanel = resolvePanel(customContentPanel, defaultContentPanel);
         final ViewGroup buttonPanel = resolvePanel(customButtonPanel, defaultButtonPanel);
+        buttonPanel.setHorizontalScrollBarEnabled(false);
+        buttonPanel.setVerticalScrollBarEnabled(false);
 
         setupContent(contentPanel);
         setupButtons(buttonPanel);
