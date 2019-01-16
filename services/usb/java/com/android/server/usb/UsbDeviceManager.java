@@ -1109,7 +1109,8 @@ public class UsbDeviceManager {
 
             // Dont show the notification when connected to a USB peripheral
             // and the link does not support PR_SWAP and DR_SWAP
-            if (mHideUsbNotification && !mSupportsAllCombinations) {
+            if (mHideUsbNotification && !mSupportsAllCombinations
+                && !"true".equals(SystemProperties.get("ro.rk.host_unhide_charge_notify"))) {
                 if (mUsbNotificationId != 0) {
                     mNotificationManager.cancelAsUser(null, mUsbNotificationId,
                             UserHandle.ALL);
