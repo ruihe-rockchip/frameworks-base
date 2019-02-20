@@ -98,8 +98,10 @@ public class AudioCommon {
         if (mAudioManager == null)
             mAudioManager = (AudioManager) ctx
                     .getSystemService(Context.AUDIO_SERVICE);
-
-        mAudioManager.setWiredDeviceConnectionState(device, state, "", "");
+        /*
+         * give the special address for set bitstream device
+         */
+        mAudioManager.setWiredDeviceConnectionState(device, state, "RK_BITSTREAM_DEVICE_ADDRESS", "");
 
     }
 
