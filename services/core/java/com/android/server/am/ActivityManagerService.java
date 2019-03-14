@@ -14329,8 +14329,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             if (!Build.isBuildConsistent() 
                     && ("orange".equals(SystemProperties.get("ro.boot.verifiedbootstate", "red")))) {
-                Slog.e(TAG, "Build fingerprint is not consistent, warning user");
-                mUiHandler.obtainMessage(SHOW_FINGERPRINT_ERROR_UI_MSG).sendToTarget();
+                //Slog.e(TAG, "Build fingerprint is not consistent, warning user");
+				//mUiHandler.obtainMessage(SHOW_FINGERPRINT_ERROR_UI_MSG).sendToTarget();
             }
 
             long ident = Binder.clearCallingIdentity();
