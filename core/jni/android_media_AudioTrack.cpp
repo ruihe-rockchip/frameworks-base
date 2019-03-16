@@ -288,7 +288,12 @@ android_media_AudioTrack_setup(JNIEnv *env, jobject thiz, jobject weak_this, job
 
         // compute the frame count
         size_t frameCount;
-        if (audio_is_linear_pcm(format)) {
+        /*
+         * fix bug: compute framecount error when format = IEC61937
+         * see mFrameSize which is computed in function set() in AudioTrack.cpp
+         * this codes also modify in android9.0
+         */
+        if (audio_has_proportional_frames(format)) {// audio_is_linear_pcm
             const size_t bytesPerSample = audio_bytes_per_sample(format);
             frameCount = buffSizeInBytes / (channelCount * bytesPerSample);
         } else {
