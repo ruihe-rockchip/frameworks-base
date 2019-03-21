@@ -846,7 +846,7 @@ public class Build {
         // Don't care on eng builds.  Incremental build may trigger false negative.
         if (IS_ENG) return true;
 
-        if (IS_TREBLE_ENABLED) {
+        /*if (IS_TREBLE_ENABLED) {
             int result = VintfObject.verify(new String[0]);
 
             if (result != 0) {
@@ -855,7 +855,7 @@ public class Build {
             }
 
             return result == 0;
-        }
+        }*/
 
         final String system = SystemProperties.get("ro.build.fingerprint");
         final String vendor = SystemProperties.get("ro.vendor.build.fingerprint");
