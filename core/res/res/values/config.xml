@@ -1126,7 +1126,7 @@
     <bool name="config_enable_emergency_call_while_sim_locked">true</bool>
 
     <!-- Is the lock-screen disabled for new users by default -->
-    <bool name="config_disableLockscreenByDefault">false</bool>
+    <bool name="config_disableLockscreenByDefault">true</bool>
 
     <!-- If true, enables verification of the lockscreen credential in the factory reset protection
         flow. This should be true if gatekeeper / weaver credentials can still be checked after a
