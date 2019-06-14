@@ -4652,6 +4652,14 @@ public class ConnectivityService extends IConnectivityManager.Stub
         return getNetworkForRequest(mDefaultRequest.requestId);
     }
 
+    private void ensureRunningOnConnectivityServiceThread() {
+        if (mHandler.getLooper().getThread() != Thread.currentThread()) {
+            throw new IllegalStateException(
+                    "Not running on ConnectivityService thread: "
+                            + Thread.currentThread().getName());
+        }
+    }
+
     private boolean isDefaultNetwork(NetworkAgentInfo nai) {
         return nai == getDefaultNetwork();
     }
