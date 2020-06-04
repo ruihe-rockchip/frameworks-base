@@ -96,6 +96,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         Dependency.get(DarkIconDispatcher.class).addDarkReceiver(mSignalClusterView);
         // Default to showing until we know otherwise.
         showSystemIconArea(false);
+		mStatusBar.setVisibility(View.GONE);
         initEmergencyCryptkeeperText();
     }
 

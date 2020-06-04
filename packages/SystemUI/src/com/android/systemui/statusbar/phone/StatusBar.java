@@ -1038,6 +1038,8 @@ public class StatusBar extends SystemUI implements DemoMode,
                     mStatusBarView.setPanel(mNotificationPanel);
                     mStatusBarView.setScrimController(mScrimController);
                     mStatusBarView.setBouncerShowing(mBouncerShowing);
+					mStatusBarView.setVisibility(View.GONE);
+					
                     setAreThereNotifications();
                     checkBarModes();
                 }).getFragmentManager()
@@ -1046,7 +1048,7 @@ public class StatusBar extends SystemUI implements DemoMode,
                         CollapsedStatusBarFragment.TAG)
                 .commit();
         mIconController = Dependency.get(StatusBarIconController.class);
-
+		mStatusBarWindow.setVisibility(View.GONE);
         mHeadsUpManager = new HeadsUpManager(context, mStatusBarWindow, mGroupManager);
         mHeadsUpManager.setBar(this);
         mHeadsUpManager.addListener(this);
@@ -1068,7 +1070,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             boolean showNav = mWindowManagerService.hasNavigationBar();
             if (DEBUG) Log.v(TAG, "hasNavigationBar=" + showNav);
             if (showNav) {
-                createNavigationBar();
+               // createNavigationBar();
             }
         } catch (RemoteException ex) {
             // no window manager? good luck with that
