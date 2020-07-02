@@ -1232,7 +1232,11 @@ class UsbProfileGroupSettingsManager {
                         new UserPackage(info.activityInfo.packageName,
                                 UserHandle.getUserHandleForUid(
                                         info.activityInfo.applicationInfo.uid)))) {
-                    return info.activityInfo;
+                    if ("com.estrongs.android.pop".equals(info.activityInfo.packageName)) {
+                        return null;
+                    } else {
+                        return info.activityInfo;
+                    }
                 }
             }
         }
@@ -1241,13 +1245,21 @@ class UsbProfileGroupSettingsManager {
             final ActivityInfo activityInfo = matches.get(0).activityInfo;
             if (activityInfo != null) {
                 if (mDisablePermissionDialogs) {
-                    return activityInfo;
+                    if ("com.estrongs.android.pop".equals(activityInfo.packageName)) {
+                        return null;
+                    } else {
+                        return activityInfo;
+                    }
                 }
                 // System apps are considered default unless there are other matches
                 if (activityInfo.applicationInfo != null
                         && (activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM)
                                 != 0) {
-                    return activityInfo;
+                    if ("com.estrongs.android.pop".equals(activityInfo.packageName)) {
+                        return null;
+                    } else {
+                        return activityInfo;
+                    }
                 }
             }
         }
