@@ -1,0 +1,13 @@
+#!/system/bin/sh
+#
+# Script to start "netSet" on the device, which has a very rudimentary
+# shell.
+#
+
+base=/system
+export CLASSPATH=$base/framework/netSet.jar
+exec /system/bin/app_process $base/bin com.android.commands.netSet.netSet "$@"
+
+#export CLASSPATH=/data/netSet.jar
+#exec app_process /data com.android.commands.netSet.netSet "$@"
+
