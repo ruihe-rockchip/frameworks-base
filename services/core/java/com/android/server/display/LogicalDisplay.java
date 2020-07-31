@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import libcore.util.Objects;
+import android.os.SystemProperties;
+
 
 /**
  * Describes how a logical display is configured.
@@ -150,6 +152,22 @@ final class LogicalDisplay {
                 mInfo.physicalYDpi = mOverrideDisplayInfo.physicalYDpi;
             }
         }
+
+		if(mDisplayId!=Display.DEFAULT_DISPLAY){
+           String rotation = SystemProperties.get("persist.sys.rotation.einit","0");
+           if(Integer.valueOf(rotation)%2!=0) {
+               mInfo.appWidth = mPrimaryDisplayDeviceInfo.height;
+               mInfo.appHeight = mPrimaryDisplayDeviceInfo.width;
+               mInfo.logicalWidth = mPrimaryDisplayDeviceInfo.height;
+               mInfo.logicalHeight=mPrimaryDisplayDeviceInfo.width;
+
+           }else{
+               mInfo.appWidth = mPrimaryDisplayDeviceInfo.width;
+               mInfo.appHeight = mPrimaryDisplayDeviceInfo.height;
+               mInfo.logicalWidth = mPrimaryDisplayDeviceInfo.width;
+               mInfo.logicalHeight=mPrimaryDisplayDeviceInfo.height;
+           }
+       }
         return mInfo;
     }
 
